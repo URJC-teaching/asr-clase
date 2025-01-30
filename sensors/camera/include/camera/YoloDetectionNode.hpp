@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "yolov8_msgs/msg/detection_array.hpp"
+#include "yolo_msgs/msg/detection_array.hpp"
 #include "vision_msgs/msg/detection2_d_array.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -31,9 +31,9 @@ public:
   YoloDetectionNode();
 
 private:
-  void detection_callback(const yolov8_msgs::msg::DetectionArray::ConstSharedPtr & msg);
+  void detection_callback(const yolo_msgs::msg::DetectionArray::ConstSharedPtr & msg);
 
-  rclcpp::Subscription<yolov8_msgs::msg::DetectionArray>::SharedPtr detection_sub_;
+  rclcpp::Subscription<yolo_msgs::msg::DetectionArray>::SharedPtr detection_sub_;
   rclcpp::Publisher<vision_msgs::msg::Detection2DArray>::SharedPtr detection_pub_;
 };
 
