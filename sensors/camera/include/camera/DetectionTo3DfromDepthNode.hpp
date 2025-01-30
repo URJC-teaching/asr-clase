@@ -24,7 +24,7 @@
 
 #include "message_filters/subscriber.h"
 #include "message_filters/sync_policies/approximate_time.h"
-#include "image_geometry/pinhole_camera_model.h"
+#include "image_geometry/pinhole_camera_model.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 

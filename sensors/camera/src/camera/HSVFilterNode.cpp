@@ -15,7 +15,7 @@
 #include <memory>
 
 #include "opencv2/highgui.hpp"
-#include "cv_bridge/cv_bridge.h"
+#include "cv_bridge/cv_bridge.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 
 #include "camera/HSVFilterNode.hpp"

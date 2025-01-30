@@ -17,7 +17,7 @@ find_package(pcl_conversions REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(image_geometry REQUIRED)
 find_package(depth_image_proc REQUIRED)
-find_package(yolov8_msgs REQUIRED)
+find_package(yolo_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -37,7 +37,7 @@ set(dependencies
   pcl_ros
   image_geometry
   depth_image_proc
-  yolov8_msgs
+  yolo_msgs
   geometry_msgs
   tf2_geometry_msgs
   tf2
