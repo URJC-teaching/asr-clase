@@ -22,13 +22,18 @@ int main(int argc, char * argv[])
 
   auto node = rclcpp::Node::make_shared("logger_node");
 
+
+  rclcpp::Time start = node->now();
+
   rclcpp::Rate loop_rate(10ms);
   
   rclcpp::Time start_time = node->now();
   int counter = 0;
-  while (rclcpp::ok() && (node->now() - start_time) < 5s) {
-    rclcpp::Duration elapsed = node->now() - start_time;
-    RCLCPP_ERROR(node->get_logger(), "Hello %d. Elapsed: %.2fs", counter++, elapsed.seconds());
+  while (rclcpp::ok() && node->now() - start < 5s) {
+    rclcpp::Time current = node->now();
+    rclcpp::Duration diff = current - start;
+
+    RCLCPP_ERROR(node->get_logger(), "Hello %d. %.2lfs", counter++, diff.seconds());
 
     rclcpp::spin_some(node);
     loop_rate.sleep();
