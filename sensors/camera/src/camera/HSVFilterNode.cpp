@@ -172,7 +172,6 @@ HSVFilterNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & im
   cv::Point2d point = get_detected_center(image_filtered);
 
   if (model_->cameraInfo().distortion_model != "") {
-    std::cerr << "No pases!!!" << std::endl;
     auto [yaw, pitch] = get_detected_angles(point, model_);
 
     RCLCPP_INFO(
