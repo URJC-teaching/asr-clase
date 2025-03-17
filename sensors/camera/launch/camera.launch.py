@@ -29,8 +29,8 @@ def generate_launch_description():
                         output='screen',
                         parameters=[param_file],
                         remappings=[
-                          ('input_image', '/camera/image_raw'),
-                          ('camera_info', '/camera/camera_info'),
+                          ('input_image', '/rgb/image'),
+                          ('camera_info', '/rgb/camera_info'),
                         ])
 
     ld = LaunchDescription()

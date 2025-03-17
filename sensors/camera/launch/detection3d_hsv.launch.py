@@ -29,8 +29,8 @@ def generate_launch_description():
                         output='screen',
                         parameters=[param_file],
                         remappings=[
-                          ('input_image', '/camera/image_raw'),
-                          ('camera_info', '/camera/camera_info'),
+                          ('input_image', '/rgb/image'),
+                          ('camera_info', '/rgb/camera_info'),
                           ('output_detection_2d', 'detection_2d'),
                         ])
 
@@ -39,9 +39,9 @@ def generate_launch_description():
                         output='screen',
                         parameters=[param_file],
                         remappings=[
-                          ('input_depth', '/camera/depth/image_raw'),
+                          ('input_depth', '/stereo/depth'),
                           ('input_detection_2d', 'detection_2d'),
-                          ('camera_info', '/camera/camera_info'),
+                          ('camera_info', '/rgb/camera_info'),
                           ('output_detection_3d', 'detection_3d'),
                         ])
 
