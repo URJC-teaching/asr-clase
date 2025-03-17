@@ -35,7 +35,7 @@ HSVFilterNode::HSVFilterNode()
 : Node("hsv_filter_node")
 {
   image_sub_ = image_transport::create_subscription(
-    this, "input_image", std::bind(&HSVFilterNode::image_callback, this, _1),
+    this, "/image_raw", std::bind(&HSVFilterNode::image_callback, this, _1),
     "raw", rclcpp::SensorDataQoS().reliable().get_rmw_qos_profile());
 
   camera_info_sub_ = create_subscription<sensor_msgs::msg::CameraInfo>(
@@ -170,11 +170,14 @@ HSVFilterNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & im
   }
 
   cv::Point2d point = get_detected_center(image_filtered);
-  auto [yaw, pitch] = get_detected_angles(point, model_);
+  
+  if (model_->cameraInfo().distortion_model != "") {
+    std::cerr << "No pases!!!" << std::endl;
+    auto [yaw, pitch] = get_detected_angles(point, model_);
 
-  RCLCPP_INFO(
-    get_logger(), "Center at pos = (%lf, %lf) angle = [%f, %f]", point.x, point.y, yaw, pitch);
-
+    RCLCPP_INFO(
+      get_logger(), "Center at pos = (%lf, %lf) angle = [%f, %f]", point.x, point.y, yaw, pitch);
+  }
   publish_detection(image, point, bbx);
 }
 
