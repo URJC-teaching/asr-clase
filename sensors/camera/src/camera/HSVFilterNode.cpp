@@ -31,6 +31,34 @@ namespace camera
 
 using std::placeholders::_1;
 
+const std::string window_name = "Filtered Image";
+const std::string low_h = "Low H";
+const std::string high_h = "High H";
+const std::string low_s = "Low S";
+const std::string high_s = "High S";
+const std::string low_v = "Low V";
+const std::string high_v = "High V";
+const uint8_t h_max_val = 360 / 2;
+const uint8_t s_max_val = 255;
+const uint8_t v_max_val = 255;
+
+void create_trackbars(int h_min, int h_max, int s_min, int s_max, int v_min, int v_max)
+{
+  cv::namedWindow(window_name);
+  cv::createTrackbar(low_h, window_name, nullptr, h_max_val);
+  cv::setTrackbarPos(low_h, window_name, h_min);
+  cv::createTrackbar(high_h, window_name, nullptr, h_max_val);
+  cv::setTrackbarPos(high_h, window_name, h_max);
+  cv::createTrackbar(low_s, window_name, nullptr, s_max_val);
+  cv::setTrackbarPos(low_s, window_name, s_min);
+  cv::createTrackbar(high_s, window_name, nullptr, s_max_val);
+  cv::setTrackbarPos(high_s, window_name, s_max);
+  cv::createTrackbar(low_v, window_name, nullptr, v_max_val);
+  cv::setTrackbarPos(low_v, window_name, v_min);
+  cv::createTrackbar(high_v, window_name, nullptr, v_max_val);
+  cv::setTrackbarPos(high_v, window_name, v_max);
+}
+
 HSVFilterNode::HSVFilterNode()
 : Node("hsv_filter_node")
 {
@@ -59,13 +87,7 @@ HSVFilterNode::HSVFilterNode()
   get_parameter("max_s", S_);
   get_parameter("max_v", V_);
 
-  cv::namedWindow("Filtered Image");
-  cv::createTrackbar("Low H", "Filtered Image", &h_, 360 / 2);
-  cv::createTrackbar("High H", "Filtered Image", &H_, 360 / 2);
-  cv::createTrackbar("Low S", "Filtered Image", &s_, 255);
-  cv::createTrackbar("High S", "Filtered Image", &S_, 255);
-  cv::createTrackbar("Low V", "Filtered Image", &v_, 255);
-  cv::createTrackbar("High V", "Filtered Image", &V_, 255);
+  create_trackbars(h_, H_, s_, S_, v_, V_);
 }
 
 void
@@ -96,7 +118,7 @@ HSVFilterNode::show_image_filtered(const cv::Mat & image, const cv::Mat1b & imag
 
   cv::Mat out_image;
   image.copyTo(out_image, image_filtered);
-  cv::imshow("Filtered Image", out_image);
+  cv::imshow(window_name, out_image);
 }
 
 cv::Point2d
@@ -160,6 +182,13 @@ HSVFilterNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & im
   }
   cv::Mat & image_cv = cv_ptr->image;
 
+  h_ = cv::getTrackbarPos(low_h, window_name);
+  H_ = cv::getTrackbarPos(high_h, window_name);
+  s_ = cv::getTrackbarPos(low_s, window_name);
+  S_ = cv::getTrackbarPos(high_s, window_name);
+  v_ = cv::getTrackbarPos(low_v, window_name);
+  V_ = cv::getTrackbarPos(high_v, window_name);
+  
   cv::Mat1b image_filtered = filter_image(image_cv, h_, s_, v_, H_, S_, V_);
   show_image_filtered(image_cv, image_filtered);
 
