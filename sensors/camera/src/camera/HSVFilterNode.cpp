@@ -35,7 +35,7 @@ HSVFilterNode::HSVFilterNode()
 : Node("hsv_filter_node")
 {
   image_sub_ = image_transport::create_subscription(
-    this, "/image_raw", std::bind(&HSVFilterNode::image_callback, this, _1),
+    this, "input_image", std::bind(&HSVFilterNode::image_callback, this, _1),
     "raw", rclcpp::SensorDataQoS().reliable().get_rmw_qos_profile());
 
   camera_info_sub_ = create_subscription<sensor_msgs::msg::CameraInfo>(
