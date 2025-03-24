@@ -26,7 +26,7 @@ def generate_launch_description():
         output='screen',
         remappings=[
             ('/output_vel', '/cmd_vel'),
-            ('/input_scan', '/scan')
+            ('/input_scan', '/scan_raw')
         ],
         parameters=[
             {'use_sim_time': True}
