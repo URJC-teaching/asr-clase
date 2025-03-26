@@ -25,15 +25,27 @@ def generate_launch_description():
     param_file = os.path.join(pkg_dir, 'config', 'params.yaml')
 
     detector_cmd = Node(package='camera',
-                        executable='hsv_filter',
+                        executable='yolo_detection',
                         output='screen',
                         parameters=[param_file],
                         remappings=[
-                          ('input_image', '/color/image_raw'),
-                          ('camera_info', '/color/camera_info'),
+                          ('input_detection', '/yolo/detections'),
+                          ('output_detection_2d', '/detections_2d')
+                        ])
+
+    convert_2d_3d = Node(package='camera',
+                        executable='detection_2d_to_3d_depth',
+                        output='screen',
+                        parameters=[param_file],
+                        remappings=[
+                          ('input_depth', '/stereo/depth'),
+                          ('input_detection_2d', '/detections_2d'),
+                          ('camera_info', '/rgb/camera_info'),
+                          ('output_detection_3d', '/detections_3d'),
                         ])
 
     ld = LaunchDescription()
     ld.add_action(detector_cmd)
+    ld.add_action(convert_2d_3d)
 
     return ld

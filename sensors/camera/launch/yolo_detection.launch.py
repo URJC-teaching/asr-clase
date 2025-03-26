@@ -24,16 +24,16 @@ def generate_launch_description():
     pkg_dir = get_package_share_directory('camera')
     param_file = os.path.join(pkg_dir, 'config', 'params.yaml')
 
-    detector_cmd = Node(package='camera',
-                        executable='hsv_filter',
+    yolo_cmd = Node(package='camera',
+                        executable='yolo_detection',
                         output='screen',
                         parameters=[param_file],
                         remappings=[
-                          ('input_image', '/color/image_raw'),
-                          ('camera_info', '/color/camera_info'),
+                          ('input_detection', '/yolo/detections'),
+                          ('output_detection_2d', '/detections_2d')
                         ])
 
     ld = LaunchDescription()
-    ld.add_action(detector_cmd)
+    ld.add_action(yolo_cmd)
 
     return ld
