@@ -25,7 +25,7 @@ def generate_launch_description():
         name='bt_bumpgo',
         output='screen',
         remappings=[
-            ('/output_vel', '/cmd_vel'),
+            ('/output_vel', '/cmd_vel_muxed'),
             ('/input_scan', '/scan_raw')
         ],
         parameters=[

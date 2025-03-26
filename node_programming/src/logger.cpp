@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
   rclcpp::Time start = node->now();
 
   rclcpp::Rate loop_rate(10ms);
-  
+
   rclcpp::Time start_time = node->now();
   int counter = 0;
   while (rclcpp::ok() && node->now() - start < 5s) {

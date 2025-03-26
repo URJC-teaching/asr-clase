@@ -188,7 +188,7 @@ HSVFilterNode::image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & im
   S_ = cv::getTrackbarPos(high_s, window_name);
   v_ = cv::getTrackbarPos(low_v, window_name);
   V_ = cv::getTrackbarPos(high_v, window_name);
-  
+
   cv::Mat1b image_filtered = filter_image(image_cv, h_, s_, v_, H_, S_, V_);
   show_image_filtered(image_cv, image_filtered);
 
