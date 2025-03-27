@@ -59,7 +59,7 @@ private:
   BT::Blackboard::Ptr blackboard_;
   bool executed_;
 
-  
+
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr status_pub_;
 
 };

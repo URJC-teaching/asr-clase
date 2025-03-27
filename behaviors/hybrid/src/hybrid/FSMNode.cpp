@@ -120,7 +120,7 @@ FSMNode::check_behavior_finished()
 {
   if (state_ == State::BUMP_GO) {
     auto elapsed = now() - start_time_;
-    RCLCPP_DEBUG(get_logger(), "Elapsed time: %.2f seconds", elapsed.seconds());
+    RCLCPP_INFO(get_logger(), "Elapsed time: %.2f seconds", elapsed.seconds());
     if (elapsed > std::chrono::seconds(BUMP_GO_TIMEOUT)) {
       RCLCPP_INFO(get_logger(), "State %d. BUMP_GO timeout", static_cast<int>(state_));
       last_status_ = "SUCCESS";

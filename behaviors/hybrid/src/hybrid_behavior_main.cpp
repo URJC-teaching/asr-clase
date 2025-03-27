@@ -77,6 +77,7 @@ int main(int argc, char * argv[])
     navigation_node->get_current_state().label().c_str());
   while (rclcpp::ok()) {
     exec.spin_some();
+    rclcpp::spin_some(node);
 
     if (fsm_node->get_state() == hybrid::State::STOP) {
       RCLCPP_INFO(node->get_logger(), "FSM stopped. Exiting...");

@@ -111,7 +111,7 @@ BehaviorRunner::on_activate(const rclcpp_lifecycle::State & previous_state)
   timer_ =
     create_wall_timer(10ms, std::bind(&BehaviorRunner::control_cycle, this));
 
-  RCLCPP_INFO(get_logger(), "Timer created");
+  RCLCPP_DEBUG(get_logger(), "Timer created");
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
