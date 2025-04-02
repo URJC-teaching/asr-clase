@@ -43,7 +43,7 @@ def generate_launch_description():
         description='Topic of the rgb image')
 
     declare_depth_topic_cmd = DeclareLaunchArgument(
-        'camera_image_topic',
+        'camera_depth_topic',
         default_value='/camera/depth/image_raw',
         description='Topic of the depth image')
 
@@ -53,7 +53,7 @@ def generate_launch_description():
         description='Topic of the depth image')
 
     declare_camerainfo_topic_cmd = DeclareLaunchArgument(
-        'camera_depth_topic',
+        'camerainfo_topic',
         default_value='/camera/camera_info',
         description='Topic of the camera info')
 
