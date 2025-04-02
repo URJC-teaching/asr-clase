@@ -39,12 +39,12 @@ DetectionTo3DfromPCNode::DetectionTo3DfromPCNode()
 : Node("detection_to_3d_from_pc2_node")
 {
   pc2_sub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::PointCloud2>>(
-    this, "input_pointcloud", rclcpp::SensorDataQoS().get_rmw_qos_profile());
+    this, "input_pointcloud", rclcpp::SensorDataQoS().reliable().get_rmw_qos_profile());
   detection_sub_ =
     std::make_shared<message_filters::Subscriber<vision_msgs::msg::Detection2DArray>>(
     this, "input_detection_2d", rclcpp::SensorDataQoS().reliable().get_rmw_qos_profile());
   sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(
-    MySyncPolicy(10), *pc2_sub_, *detection_sub_);
+    MySyncPolicy(50), *pc2_sub_, *detection_sub_);
   sync_->registerCallback(std::bind(&DetectionTo3DfromPCNode::callback_sync, this, _1, _2));
 
   detection_pub_ = create_publisher<vision_msgs::msg::Detection3DArray>(
