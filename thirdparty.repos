@@ -1,20 +1,8 @@
 repositories:
-  thirdparty/yolov8_ros:
+  thirdparty/yolo_ros:
     type: git
-    url: https://github.com/mgonzs13/yolov8_ros.git
+    url: git@github.com:mgonzs13/yolo_ros.git
     version: main
-  thirdparty/cascade_lifecycle:
-    type: git
-    url: https://github.com/fmrico/cascade_lifecycle
-    version: rolling
-  thirdparty/groot:
-    type: git
-    url: https://github.com/BehaviorTree/Groot
-    version: master
-  thirdparty/ros_astra_camera:
-    type: git
-      url: https://github.com/Juancams/ros_astra_camera.git
-      version: rolling
   thirdparty/ros2_v4l2_camera:
     type: git
       url: https://github.com/tier4/ros2_v4l2_camera.git

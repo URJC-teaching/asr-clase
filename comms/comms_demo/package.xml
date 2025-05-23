@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>comms_demo</name>
+  <version>0.0.1</version>
+  <description>Cliente y servidor para GenerateInformation</description>
+
+  <maintainer email="rodrigo.perez@urjc.es">Rodrigo Pérez Rodríguez</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+  <depend>rclpy</depend>
+  <depend>comms_interfaces</depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
