@@ -1,21 +1,21 @@
-// Copyright 2024 Intelligent Robotics Lab
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+  // Copyright 2024 Intelligent Robotics Lab
+  //
+  // Licensed under the Apache License, Version 2.0 (the "License");
+  // you may not use this file except in compliance with the License.
+  // You may obtain a copy of the License at
+  //
+  //     http://www.apache.org/licenses/LICENSE-2.0
+  //
+  // Unless required by applicable law or agreed to in writing, software
+  // distributed under the License is distributed on an "AS IS" BASIS,
+  // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  // See the License for the specific language governing permissions and
+  // limitations under the License.
 
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/int32.hpp"
+  #include "rclcpp/rclcpp.hpp"
+  #include "std_msgs/msg/int32.hpp"
 
-#include "node_programming/LifeCyclePublisherNode.hpp"
+  #include "node_programming/LifeCyclePublisherNode.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -48,7 +48,7 @@ LifeCyclePublisherNode::on_activate(const rclcpp_lifecycle::State & previous_sta
   RCLCPP_INFO(get_logger(), "Activating...");
 
   timer_ = create_wall_timer(
-    100ms, std::bind(&LifeCyclePublisherNode::timer_callback, this));
+      100ms, std::bind(&LifeCyclePublisherNode::timer_callback, this));
 
   publisher_->on_activate();
 
@@ -102,4 +102,4 @@ LifeCyclePublisherNode::timer_callback()
   publisher_->publish(message_);
 }
 
-}  //  namespace node_programming
+}    //  namespace node_programming

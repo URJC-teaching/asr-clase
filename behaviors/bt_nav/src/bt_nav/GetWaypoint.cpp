@@ -38,7 +38,7 @@ GetWaypoint::GetWaypoint(
   wp_.header.frame_id = "map";
   wp_.pose.orientation.w = 1.0;
 
-  wp_.pose.position.x = -4.0;
+  wp_.pose.position.x = 0.0;
   wp_.pose.position.y = 0.0;
 }
 
