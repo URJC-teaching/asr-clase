@@ -68,7 +68,6 @@ class GenerateResponseNode(Node):
 
     def say_prompt(self):
         goal = TTS.Goal()
-        # goal.text = "¿Qué quieres beber?"
         goal.text = self.initial_prompt
         self.get_logger().info(f'Speaking: "{goal.text}"')
         self.tts_client.send_goal_async(goal).add_done_callback(self.tts_prompt_callback)
@@ -111,8 +110,6 @@ class GenerateResponseNode(Node):
         self.result = None
         self.intention = ''
         
-        # self.placeholder = '[]'
-        # self.intention_input = 'order_drink'
 
         try:
             package_share = get_package_share_directory('hri_examples')
