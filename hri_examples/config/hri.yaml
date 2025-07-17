@@ -5,5 +5,5 @@ generate_response_node:
     grammar_file: grammar.txt
     placeholder: "[]"
     initial_prompt: "¿Qué quieres beber?"
-    intention_input: drink
+    intention: drink_order
 

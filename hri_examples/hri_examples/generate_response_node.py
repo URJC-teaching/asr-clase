@@ -25,13 +25,19 @@ class GenerateResponseNode(Node):
         self.declare_parameter('grammar_file', 'grammar.txt')
         self.declare_parameter('placeholder', '[]')
         self.declare_parameter('initial_prompt', '¿Qué quieres beber?')
-        self.declare_parameter('intention_input', 'order_drink')
+        self.declare_parameter('intention', 'order_drink')
 
         self.prompt_file = self.get_parameter('prompt_file').get_parameter_value().string_value
         self.grammar_file = self.get_parameter('grammar_file').get_parameter_value().string_value
         self.placeholder = self.get_parameter('placeholder').get_parameter_value().string_value
         self.initial_prompt = self.get_parameter('initial_prompt').get_parameter_value().string_value
-        self.intention_input = self.get_parameter('intention_input').get_parameter_value().string_value
+        self.intention_input = self.get_parameter('intention').get_parameter_value().string_value
+
+        self.get_logger().info(f'Using prompt file: {self.prompt_file}')
+        self.get_logger().info(f'Using grammar file: {self.grammar_file}')
+        self.get_logger().info(f'Using placeholder: "{self.placeholder}"')
+        self.get_logger().info(f'Initial prompt: "{self.initial_prompt}"')
+        self.get_logger().info(f'Intention input: "{self.intention_input}"')
 
         self.state = 'INIT'        
 
