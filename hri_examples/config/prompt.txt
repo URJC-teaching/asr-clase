@@ -1,0 +1,4 @@
+Given the sentence "[]", extract the [] from the sentence and return it with the following JSON format:
+{
+"intention": "word extracted in the sentence"
+}

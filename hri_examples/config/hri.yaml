@@ -1,0 +1,9 @@
+generate_response_node:
+  ros__parameters:
+    use_sim_time: True
+    prompt_file: prompt.txt
+    grammar_file: grammar.txt
+    placeholder: "[]"
+    initial_prompt: "¿Qué quieres beber?"
+    intention_input: drink
+
