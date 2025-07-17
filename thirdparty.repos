@@ -7,3 +7,19 @@ repositories:
     type: git
     url: https://github.com/tier4/ros2_v4l2_camera.git
     version: galactic
+  thirdparty/whisper_ros:
+        type: git
+        url: https://github.com/mgonzs13/whisper_ros.git
+        version: main
+  thirdparty/audio_common:
+      type: git
+      url: https://github.com/mgonzs13/audio_common.git
+      version: main
+  thirdparty/tts_ros:
+      type: git
+      url: https://github.com/mgonzs13/tts_ros.git
+      version: main
+  thirdparty/llama_ros:
+      type: git
+      url: https://github.com/mgonzs13/llama_ros.git
+      version: main
