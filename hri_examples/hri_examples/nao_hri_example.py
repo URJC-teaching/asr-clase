@@ -3,6 +3,8 @@ from rclpy.node import Node
 from std_srvs.srv import SetBool
 from hni_interfaces.srv import TextToSpeech
 from nao_lola_command_msgs.msg import ChestLed
+from rclpy.action import ActionClient
+from nao_pos_interfaces.action import PosPlay
 import time
 
 class NaoHRIExample(Node):
@@ -22,10 +24,29 @@ class NaoHRIExample(Node):
 
         self.get_logger().info("✅ STT and TTS clients ready to use.")
 
+        # Position action client
+        self.pos_client = ActionClient(self, PosPlay, '/nao_pos_action')
+        
+        self.get_logger().info("✅ Position action client ready to use.")
+
         # Publisher to change chest led color
         self.chest_led_pub = self.create_publisher(ChestLed, '/effectors/chest_led', 10)
 
     def run(self):
+
+        self.get_logger().info("🤖 Iniciando demostración de HRI con Nao...")
+
+        pos_goal = PosPlay.Goal()
+        pos_goal.action_name = "hello"
+        
+        self.get_logger().info("⏳ Sending position goal...")
+        send_goal_future = self.pos_client.send_goal_async(pos_goal)
+        rclpy.spin_until_future_complete(self, send_goal_future)
+        goal_handle = send_goal_future.result()
+
+        if not goal_handle.accepted:
+            self.get_logger().error("❌ Goal rejected")
+            return
 
         chest_led_msg = ChestLed()
         chest_led_msg.color.r = 1.0

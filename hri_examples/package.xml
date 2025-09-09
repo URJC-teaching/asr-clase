@@ -12,6 +12,7 @@
   <depend>audio_common_msgs</depend>
   <depend>hni_interfaces</depend>
   <depend>nao_lola_command_msgs</depend>
+  <depend>nao_pos_interfaces</depend>
   <depend>std_srvs</depend>
 
   <!-- Test dependencies -->
