@@ -23,3 +23,7 @@ repositories:
       type: git
       url: https://github.com/mgonzs13/llama_ros.git
       version: main
+  thirdparty/simple_hri:
+      type: git
+      url: git@github.com:rodperex/simple_hri.git
+      version: main

@@ -10,6 +10,9 @@
   <!-- Runtime dependencies -->
   <depend>rclpy</depend>
   <depend>audio_common_msgs</depend>
+  <depend>hni_interfaces</depend>
+  <depend>nao_lola_command_msgs</depend>
+  <depend>std_srvs</depend>
 
   <!-- Test dependencies -->
   <test_depend>ament_copyright</test_depend>
