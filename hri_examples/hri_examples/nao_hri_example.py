@@ -5,6 +5,9 @@ from hni_interfaces.srv import TextToSpeech
 from nao_lola_command_msgs.msg import ChestLed
 from rclpy.action import ActionClient
 from nao_pos_interfaces.action import PosPlay
+from nao_led_interfaces.action import LedsPlay
+from nao_led_interfaces.msg import LedIndexes, LedModes
+from std_msgs.msg import ColorRGBA
 import time
 
 class NaoHRIExample(Node):
@@ -31,6 +34,10 @@ class NaoHRIExample(Node):
 
         # Publisher to change chest led color
         self.chest_led_pub = self.create_publisher(ChestLed, '/effectors/chest_led', 10)
+
+        self.leds_client = ActionClient(self, LedsPlay, '/leds_play')
+        self.switch_off_all_leds()
+
 
     def run(self):
 
@@ -120,6 +127,61 @@ class NaoHRIExample(Node):
         chest_led_msg.color.g = 0.0
         chest_led_msg.color.b = 0.0
         self.chest_led_pub.publish(chest_led_msg)
+
+    def get_result_callback(self, future):
+        result = future.result().result
+        self.get_logger().info(f'Success: {result.success}')
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected :(')
+            rclpy.shutdown()
+            return
+
+        self.get_logger().info('Goal accepted :)')
+
+        get_result_future = goal_handle.get_result_async()
+        get_result_future.add_done_callback(self.get_result_callback)
+
+    def switch_off_all_leds(self):
+        N_COLORS = 8
+        N_INTENS = 12
+
+        def black_colors(n):
+            # crea instancias independientes y usa floats
+            return [ColorRGBA(r=0.0, g=0.0, b=0.0, a=1.0) for _ in range(n)]
+
+        goal_msg = LedsPlay.Goal()
+        goal_msg.leds = [LedIndexes.REYE, LedIndexes.LEYE]
+        goal_msg.mode = LedModes.STEADY
+        goal_msg.frequency = 0.0
+        goal_msg.colors = black_colors(N_COLORS)
+        goal_msg.intensities = [0.0] * N_INTENS
+        goal_msg.duration = 0.0
+        send_goal_future = self.leds_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(self.goal_response_callback)
+
+        goal_msg = LedsPlay.Goal()
+        goal_msg.leds = [LedIndexes.CHEST]
+        goal_msg.mode = LedModes.STEADY
+        goal_msg.frequency = 0.0
+        goal_msg.colors = black_colors(N_COLORS)
+        goal_msg.intensities = [0.0] * N_INTENS
+        goal_msg.duration = 0.0
+        send_goal_future = self.leds_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(self.goal_response_callback)
+
+        goal_msg = LedsPlay.Goal()
+        goal_msg.leds = [LedIndexes.REAR, LedIndexes.LEAR]
+        goal_msg.mode = LedModes.STEADY
+        goal_msg.frequency = 0.0
+        goal_msg.colors = black_colors(N_COLORS)
+        goal_msg.intensities = [0.0] * N_INTENS
+        goal_msg.duration = 0.0
+        send_goal_future = self.leds_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(self.goal_response_callback)
+
 
 
 def main(args=None):
