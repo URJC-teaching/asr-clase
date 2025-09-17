@@ -1,0 +1,105 @@
+# Copyright 2025 Rodrigo Pérez-Rodríguez
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+import rclpy
+from rclpy.node import Node
+from vision_msgs.msg import Detection2DArray
+from geometry_msgs.msg import Vector3
+from tf2_ros import Buffer, TransformListener
+from sensor_msgs.msg import Image
+import math
+
+
+class TwoDYOLOClassDetectorNode(Node):
+    def __init__(self):
+        super().__init__('yolo_class_detector_node')
+
+        # Parameter: target YOLO class
+        self.declare_parameter('target_class', 'person')
+        self.target_class = self.get_parameter('target_class').value
+
+        # TF2 buffer and listener
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        # Subscriber to the image
+        self.image_sub = self.create_subscription(
+            Image,
+            'input_image',
+            self.image_callback,
+            rclpy.qos.qos_profile_sensor_data
+        )
+
+        # Subscriber to Detection2DArray
+        self.sub = self.create_subscription(
+            Detection2DArray,
+            'input_detection_2d',
+            self.detection_callback,
+            rclpy.qos.qos_profile_sensor_data
+        )
+
+        # Publisher for attractive vector
+        self.attractive_pub = self.create_publisher(Vector3, 'attractive_vector', 10)
+
+    def image_callback(self, msg: Image):
+        # Just to get image size for angle calculation
+        self.current_image = msg
+        self.current_image_size = (msg.width, msg.height)
+        self.get_logger().debug(f'Got image of size: {msg.width}x{msg.height}')
+        # Unsubscribe after first callback
+        self.destroy_subscription(self.image_sub)
+
+    def detection_callback(self, msg: Detection2DArray):
+        if not msg.detections:
+            return
+
+        # Find first detection of the target class
+        for detection in msg.detections:
+            if detection.results and detection.results[0].hypothesis.class_id == self.target_class:
+                self.publish_attractive_vector(detection)
+                break
+
+    def publish_attractive_vector(self, detection):
+        # Calculate angle relative to image center (positive left, negative right)
+        x = detection.bbox.center.position.x
+        self.get_logger().debug(f'Detection center x: {x:.2f}. Image size: {detection.bbox.size_x:.2f}')
+        center_x = self.current_image_size[0] / 2.0 if hasattr(self, 'current_image_size') else 320.0
+
+
+        angle = (center_x - x) / center_x  # +1 left edge, 0 center, -1 right edge
+        angle = angle * 90.0  # Convert to degrees: +90 left, 0 center, -90 right
+
+        self.get_logger().debug(f'Detected {self.target_class} at angle {angle:.1f} degrees')
+
+        vec = Vector3()
+        vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
+        vec.y = math.tan(math.radians(angle))  # Lateral offset at 1m distance
+        vec.z = 0.0
+
+        self.get_logger().debug(f'Attractive vector for {self.target_class} '
+                                   f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
+
+        self.attractive_pub.publish(vec)
+
+        
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = TwoDYOLOClassDetectorNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
