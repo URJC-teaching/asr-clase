@@ -1,0 +1,24 @@
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+import os
+
+def generate_launch_description():
+   
+    return LaunchDescription([
+  
+        Node(
+            package='laser',
+            executable='obstacle_detector_node',
+            name='obstacle_detector_node',
+            output='screen',
+            parameters=[{
+            'min_distance': 1.0,
+            'real_robot': False,
+            }],
+            remappings=[
+            ('/input_laser', '/scan_raw')
+            ]
+        ),
+    ])

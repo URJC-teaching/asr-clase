@@ -14,13 +14,16 @@ class ObstacleDetectorNode(Node):
         super().__init__('obstacle_detector_node')
 
         self.declare_parameter('min_distance', 0.5)
-        self.min_distance = self.get_parameter('min_distance').get_parameter_value().double_value
+        self.declare_parameter('real_robot', False)
 
-        self.get_logger().info(f'obstacle_detector_node set to {self.min_distance:.2f} m')
+        self.min_distance = self.get_parameter('min_distance').value
+        self.real_robot = self.get_parameter('real_robot').value
+
+        self.get_logger().info(f'Obstacle_detector_node set to {self.min_distance:.2f} m')
 
         self.laser_sub = self.create_subscription(
             LaserScan,
-            'input_scan',
+            'input_laser',
             self.laser_callback,
             rclpy.qos.qos_profile_sensor_data)
 
@@ -35,15 +38,16 @@ class ObstacleDetectorNode(Node):
 
         msg = Bool()
         if distance_min < self.min_distance:
-            angle = scan.angle_min + scan.angle_increment * min_idx
+            if not self.real_robot:
+                angle = scan.angle_min + scan.angle_increment * min_idx  # Kobuki simulator has forward-facing laser
+            else:
+                # Laser faces backward: add pi (180°)
+                # Laser upside down: flip angle (multiply by -1)
+                angle = -(scan.angle_min + scan.angle_increment * min_idx) + math.pi
+            
+            angle_deg = math.degrees(angle)
 
-            # Normalize angle
-            while angle > math.pi:
-                angle -= 2.0 * math.pi
-            while angle < -math.pi:
-                angle += 2.0 * math.pi
-
-            self.get_logger().info(f'Obstacle in ({distance_min:.2f}, {angle:.2f})')
+            self.get_logger().info('Obstacle at {:.2f} m, angle {:.2f} deg'.format(distance_min, angle_deg))
             msg.data = True
         else:
             msg.data = False
