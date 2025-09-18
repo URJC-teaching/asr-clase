@@ -6,14 +6,12 @@ import rclpy
 from rclpy.node import Node
 
 from yolo_msgs.msg import DetectionArray
-from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
+from vision_msgs.msg import Detection3DArray, Detection3D, ObjectHypothesisWithPose
 
 class YoloDetectionNode3D(Node):
 
-    # TO-DO
-
     def __init__(self):
-        super().__init__('yolo_detection_node')
+        super().__init__('yolo_detection_node_3d')
 
         self.detection_sub = self.create_subscription(
             DetectionArray,
@@ -23,23 +21,27 @@ class YoloDetectionNode3D(Node):
         )
 
         self.detection_pub = self.create_publisher(
-            Detection2DArray,
-            'output_detection_2d',
+            Detection3DArray,
+            'output_detection_3d',
             rclpy.qos.qos_profile_sensor_data
         )
 
     def detection_callback(self, msg: DetectionArray):
-        detection_array_msg = Detection2DArray()
+        detection_array_msg = Detection3DArray()
         detection_array_msg.header = msg.header
 
         for detection in msg.detections:
-            detection_msg = Detection2D()
+            detection_msg = Detection3D()
             detection_msg.header = msg.header
+            detection_msg.header.frame_id = detection.bbox3d.frame_id
 
-            detection_msg.bbox.center.position.x = detection.bbox.center.position.x
-            detection_msg.bbox.center.position.y = detection.bbox.center.position.y
-            detection_msg.bbox.size_x = detection.bbox.size.x
-            detection_msg.bbox.size_y = detection.bbox.size.y
+            detection_msg.bbox.center.position.x = detection.bbox3d.center.position.x
+            detection_msg.bbox.center.position.y = detection.bbox3d.center.position.y
+            detection_msg.bbox.center.position.z = detection.bbox3d.center.position.z
+
+            detection_msg.bbox.size.x = detection.bbox3d.size.x
+            detection_msg.bbox.size.y = detection.bbox3d.size.y
+            detection_msg.bbox.size.z = detection.bbox3d.size.z
 
             obj_msg = ObjectHypothesisWithPose()
             obj_msg.hypothesis.class_id = detection.class_name
@@ -52,7 +54,7 @@ class YoloDetectionNode3D(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = YoloDetectionNode()
+    node = YoloDetectionNode3D()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
