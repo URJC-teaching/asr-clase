@@ -46,6 +46,7 @@ def generate_launch_description():
                 'max_speed': 0.3,
                 'attractive_weight': 1.0,
                 'repulsive_weight': 1.0,
+                'stay_distance': 0.5
             }],
             remappings=[
             ('/vel', '/cmd_vel')

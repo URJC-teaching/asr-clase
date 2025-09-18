@@ -16,6 +16,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
             'min_distance': 0.3,
+            'real_robot': False,
             }],
             remappings=[
             ('/input_laser', '/scan_raw')
@@ -47,6 +48,7 @@ def generate_launch_description():
                 'max_speed': 0.3,
                 'attractive_weight': 1.0,
                 'repulsive_weight': 1.0,
+                'stay_distance': -1.0 # No stay distance in 2D
             }],
             remappings=[
             ('/vel', '/cmd_vel')

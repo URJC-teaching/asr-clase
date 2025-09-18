@@ -22,7 +22,10 @@ class ObstacleDetectorNode(Node):
 
         # Parameter: minimum distance to consider obstacle
         self.declare_parameter('min_distance', 0.5)
+        self.declare_parameter('real_robot', False)
+
         self.min_distance = self.get_parameter('min_distance').value
+        self.real_robot = self.get_parameter('real_robot').value
 
         self.get_logger().info(f'ObstacleDetectorNode min_distance={self.min_distance}')
 
@@ -47,12 +50,16 @@ class ObstacleDetectorNode(Node):
         self.get_logger().debug(f'Closest obstacle at distance {distance_min:.2f} m')
 
         if distance_min <= self.min_distance:
-            angle = scan.angle_min + scan.angle_increment * min_idx
+
+            if not self.real_robot:
+                angle = scan.angle_min + scan.angle_increment * min_idx
+            else:
+                # Laser faces backward: add pi (180°)
+                # Laser upside down: flip angle (multiply by -1)
+                angle = -(scan.angle_min + scan.angle_increment * min_idx) + math.pi
+            
             angle_deg = math.degrees(angle)
-
-            # angle = (angle + math.pi) % (2 * math.pi) - math.pi # normalize to [-pi, pi]
-            # angle_deg = math.degrees(angle)
-
+   
             self.get_logger().info('Obstacle at {:.2f} m, angle {:.2f} deg'.format(distance_min, angle_deg))
 
             self.publish_repulsive_vector(distance_min, angle)

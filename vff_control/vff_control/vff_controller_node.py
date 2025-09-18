@@ -23,7 +23,7 @@ class VFFControllerNode(Node):
         self.declare_parameter('max_speed', 0.3)
         self.declare_parameter('attractive_weight', 1.0)
         self.declare_parameter('repulsive_weight', 1.0)
-        self.declare_parameter('stay_distance', 0.5)
+        self.declare_parameter('stay_distance', -1.0) # -1.0 means no stay distance (2D case)
 
         self.max_speed = self.get_parameter('max_speed').value
         self.attractive_weight = self.get_parameter('attractive_weight').value
@@ -61,6 +61,13 @@ class VFFControllerNode(Node):
         self.compute_and_publish_cmd()
 
     def compute_and_publish_cmd(self):
+
+        # Set attractive vector to zero if closer than stay distance
+        if self.stay_distance > 0: # Only in the 3D case
+            distance = math.hypot(self.attractive_vec.x, self.attractive_vec.y)
+            if distance < self.stay_distance:
+                self.get_logger().info(f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
+                self.attractive_vec = Vector3()
 
         vff_x = self.attractive_weight * self.attractive_vec.x - self.repulsive_weight * self.repulsive_vec.x
         vff_y = self.attractive_weight * self.attractive_vec.y - self.repulsive_weight * self.repulsive_vec.y
