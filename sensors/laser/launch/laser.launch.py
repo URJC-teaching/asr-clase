@@ -14,8 +14,8 @@ def generate_launch_description():
             name='obstacle_detector_node',
             output='screen',
             parameters=[{
-            'min_distance': 1.0,
-            'real_robot': False,
+            'min_distance': 0.5,
+            'base_frame': 'base_footprint'
             }],
             remappings=[
             ('/input_laser', '/scan_raw')

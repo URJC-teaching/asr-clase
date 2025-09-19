@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'obstacle_detector_node = laser.obstacle_detector_node:main',
+            'obstacle_detector_node_no_tf = laser.obstacle_detector_node_no_tf:main',
         ],
     },
 )

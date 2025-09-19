@@ -8,16 +8,19 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Bool
+from geometry_msgs.msg import PointStamped
+from tf2_ros import Buffer, TransformListener
+from tf2_geometry_msgs import do_transform_point
 
 class ObstacleDetectorNode(Node):
     def __init__(self):
         super().__init__('obstacle_detector_node')
 
         self.declare_parameter('min_distance', 0.5)
-        self.declare_parameter('real_robot', False)
+        self.declare_parameter('base_frame', 'base_footprint')
 
         self.min_distance = self.get_parameter('min_distance').value
-        self.real_robot = self.get_parameter('real_robot').value
+        self.base_frame = self.get_parameter('base_frame').value
 
         self.get_logger().info(f'Obstacle_detector_node set to {self.min_distance:.2f} m')
 
@@ -29,30 +32,59 @@ class ObstacleDetectorNode(Node):
 
         self.obstacle_pub = self.create_publisher(Bool, 'obstacle', 10)
 
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
     def laser_callback(self, scan: LaserScan):
         if not scan.ranges:
             return
+        
+        ranges = [r if math.isfinite(r) else float('inf') for r in scan.ranges] # all NaN to inf so they are ignored by min()
+        if not ranges:
+            self.get_logger().debug('No valid laser measurements after filtering')
+            return
+        
+        distance_min = min(ranges)
+        min_idx = ranges.index(distance_min)
 
-        distance_min = min(scan.ranges)
-        min_idx = scan.ranges.index(distance_min)
+        obstacle_msg = Bool()
+        obstacle_msg.data = (distance_min < self.min_distance)
+        self.obstacle_pub.publish(obstacle_msg)
 
-        msg = Bool()
-        if distance_min < self.min_distance:
-            if not self.real_robot:
-                angle = scan.angle_min + scan.angle_increment * min_idx  # Kobuki simulator has forward-facing laser
-            else:
-                # Laser faces backward: add pi (180°)
-                # Laser upside down: flip angle (multiply by -1)
-                angle = -(scan.angle_min + scan.angle_increment * min_idx) + math.pi
+        if obstacle_msg.data:
+            angle = scan.angle_min + scan.angle_increment * min_idx # relative to the sensor frame
+            x = distance_min * math.cos(angle)
+            y = distance_min * math.sin(angle)
+
+            pt = PointStamped()
+            pt.header = scan.header
+            pt.point.x = x
+            pt.point.y = y
+            pt.point.z = 0.0
+
+            try:
+                transform = self.tf_buffer.lookup_transform(
+                    self.base_frame,
+                    scan.header.frame_id,
+                    rclpy.time.Time()
+                )
+                pt_base = do_transform_point(pt, transform)
+
+                angle_base = math.atan2(pt_base.point.y, pt_base.point.x)
+                distance_base = math.hypot(pt_base.point.x, pt_base.point.y)
+                self.get_logger().info(
+                    f'Obstacle @ {self.base_frame}: x={pt_base.point.x:.2f}, y={pt_base.point.y:.2f}, '
+                    f'distance={distance_base:.2f} m, angle={math.degrees(angle_base):.2f} deg'
+                )
+
+            except Exception as e:
+                self.get_logger().warn(f'No TF from {scan.header.frame_id} to {self.base_frame}: {e}')
+
+
             
-            angle_deg = math.degrees(angle)
-
-            self.get_logger().info('Obstacle at {:.2f} m, angle {:.2f} deg'.format(distance_min, angle_deg))
-            msg.data = True
         else:
-            msg.data = False
+            self.get_logger().debug(f'No obstacle closer than {self.min_distance:.2f} m (min={distance_min:.2f} m)')
 
-        self.obstacle_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

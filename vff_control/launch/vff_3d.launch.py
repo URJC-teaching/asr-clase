@@ -16,6 +16,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
             'min_distance': 0.3,
+            'base_frame': 'base_footprint'
             }],
             remappings=[
             ('/input_laser', '/scan_raw')
