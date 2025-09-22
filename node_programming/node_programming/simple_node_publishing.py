@@ -13,27 +13,22 @@
 # limitations under the License.
 
 import rclpy
-from rclpy.node import Node
 from std_msgs.msg import Int32
-
-class SubscriberNode(Node):
-    def __init__(self):
-        super().__init__('subscriber_node')
-        self.subscriber_ = self.create_subscription(
-            Int32, 
-            'int_topic', 
-            self.callback, 
-            10
-        )
-
-    def callback(self, msg):
-        self.get_logger().info(f"Hello {msg.data}")
 
 def main(args=None):
     rclpy.init(args=args)
-    subscriber_node = SubscriberNode()
-    rclpy.spin(subscriber_node)
-    subscriber_node.destroy_node()
+    node = rclpy.create_node('publisher_node')
+    publisher = node.create_publisher(Int32, 'int_topic', 10)
+    message = Int32()
+    message.data = 0
+
+    rate = node.create_rate(2)  # 2 Hz
+    
+    while rclpy.ok():
+        rclpy.spin_once(node)
+        publisher.publish(message)
+        message.data += 1
+        rate.sleep()
     rclpy.shutdown()
 
 if __name__ == '__main__':

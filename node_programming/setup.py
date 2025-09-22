@@ -19,7 +19,13 @@ setup(
         'console_scripts': [
             'publisher_node = node_programming.publisher_node:main',
             'subscriber_node = node_programming.subscriber_node:main',
+            'logger_node = node_programming.logger_node:main',
             'lifecycle_publisher_node = node_programming.lifecycle_publisher_node:main',
+            'lifecycle_subscriber_node = node_programming.lifecycle_subscriber_node:main',
+            'simple_node_creation = node_programming.simple_node_creation:main',
+            'simple_node_logging = node_programming.simple_node_logging:main',
+            'simple_node_publishing = node_programming.simple_node_publishing:main',
+            'simple_callback = node_programming.simple_callback:main',
         ],
     },
 )

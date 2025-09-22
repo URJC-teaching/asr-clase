@@ -14,26 +14,22 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32
 
-class SubscriberNode(Node):
+class LoggerNode(Node):
     def __init__(self):
-        super().__init__('subscriber_node')
-        self.subscriber_ = self.create_subscription(
-            Int32, 
-            'int_topic', 
-            self.callback, 
-            10
-        )
+        super().__init__('logger_node')
+        self.counter = 0
+        self.timer_ = self.create_timer(0.5, self.timer_callback)
 
-    def callback(self, msg):
-        self.get_logger().info(f"Hello {msg.data}")
+    def timer_callback(self):
+        self.get_logger().info(f'Counter: {self.counter}')
+        self.counter += 1
 
 def main(args=None):
     rclpy.init(args=args)
-    subscriber_node = SubscriberNode()
-    rclpy.spin(subscriber_node)
-    subscriber_node.destroy_node()
+    logger_node = LoggerNode()
+    rclpy.spin(logger_node)
+    logger_node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
