@@ -31,7 +31,7 @@ source venv_asr/bin/activate
 ```
 
 
-4. Instala los repositorios en *thirdparty*
+4. Instala las dependencias de *thirdparties*
 
 ```
 cd asr_ws
