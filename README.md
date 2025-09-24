@@ -41,7 +41,7 @@ pip3 install -r src/thirdparty/simple_hri/requirements.txt
 5. Construye
 
 ```
-cd asr_ws/src
+cd asr_ws/
 colcon build --symlink-install
 ```
 
