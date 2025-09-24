@@ -25,7 +25,7 @@ repositories:
     version: main
   thirdparty/simple_hri:
       type: git
-      url: git@github.com:rodperex/simple_hri.git
+      url: https://github.com/rodperex/simple_hri.git
       version: main
   thirdparty/nao_pos:
     type: git
