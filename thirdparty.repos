@@ -8,31 +8,35 @@ repositories:
     url: https://github.com/tier4/ros2_v4l2_camera.git
     version: galactic
   thirdparty/whisper_ros:
-        type: git
-        url: https://github.com/mgonzs13/whisper_ros.git
-        version: main
+    type: git
+    url: https://github.com/mgonzs13/whisper_ros.git
+    version: main
   thirdparty/audio_common:
-      type: git
-      url: https://github.com/mgonzs13/audio_common.git
-      version: main
+    type: git
+    url: https://github.com/mgonzs13/audio_common.git
+    version: main
   thirdparty/tts_ros:
-      type: git
-      url: https://github.com/mgonzs13/tts_ros.git
-      version: main
+    type: git
+    url: https://github.com/mgonzs13/tts_ros.git
+    version: main
   thirdparty/llama_ros:
-      type: git
-      url: https://github.com/mgonzs13/llama_ros.git
-      version: main
+    type: git
+    url: https://github.com/mgonzs13/llama_ros.git
+    version: main
   thirdparty/simple_hri:
       type: git
       url: git@github.com:rodperex/simple_hri.git
       version: main
   thirdparty/nao_pos:
     type: git
-        url: https://github.com/andoniroldan/nao_pos.git
-        version: main
+    url: https://github.com/andoniroldan/nao_pos.git
+    version: main
   thirdparty/nao_hri:
-      type: git
-      url: https://github.com/geriabot/nao_hri.git
-      version: main
+    type: git
+    url: https://github.com/geriabot/nao_hri.git
+    version: main
+  thirdparty/nao_led:
+    type: git
+    url: https://github.com/antbono/nao_led.git
+    version: main
 
