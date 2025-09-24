@@ -23,7 +23,9 @@ rosdep install --from-paths src --ignore-src -r
 ```
 python3 -m venv --system-site-packages venv_asr
 echo -e 'PATH="$VIRTUAL_ENV/bin:$PATH"\nexport PATH' >> venv_asr/bin/activate
-touch COLCON_IGNORE venv_asr/
+cd venv_asr/
+touch COLCON_IGNORE
+cd ..
 source venv_asr/bin/activate
 
 ```
