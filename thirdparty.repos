@@ -1,7 +1,7 @@
 repositories:
   thirdparty/yolo_ros:
     type: git
-    url: git@github.com:mgonzs13/yolo_ros.git
+    url: https://github.com/mgonzs13/yolo_ros.git
     version: main
   thirdparty/ros2_v4l2_camera:
     type: git
