@@ -22,19 +22,17 @@ rosdep install --from-paths src --ignore-src -r
 
 ```
 python3 -m venv --system-site-packages venv_asr
-echo -e 'PATH="$VIRTUAL_ENV/bin:$PATH"\nexport PATH' >> venv_asr/bin/activate
+echo -e '\n# Add venv_asr site-packages to PYTHONPATH\nVENV_SITE_PACKAGES="$VIRTUAL_ENV/lib/python3.12/site-packages"\nif [ -z "$PYTHONPATH" ]; then\n    export PYTHONPATH="$VENV_SITE_PACKAGES"\nelse\n    export PYTHONPATH="$VENV_SITE_PACKAGES:$PYTHONPATH"\nfi' >> venv_asr/bin/activate 
 cd venv_asr/
 touch COLCON_IGNORE
 cd ..
 source venv_asr/bin/activate
-
 ```
 
 
 4. Instala las dependencias de *thirdparties*
 
 ```
-cd asr_ws
 pip3 install -r src/thirdparty/llama_ros/requirements.txt
 pip3 install -r src/thirdparty/yolo_ros/requirements.txt
 pip3 install -r src/thirdparty/tts_ros/requirements.txt
@@ -44,7 +42,6 @@ pip3 install -r src/thirdparty/simple_hri/requirements.txt
 5. Construye
 
 ```
-cd asr_ws/
 colcon build --symlink-install
 ```
 
