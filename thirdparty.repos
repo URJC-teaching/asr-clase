@@ -39,8 +39,4 @@ repositories:
     type: git
     url: https://github.com/antbono/nao_led.git
     version: main
-  nao_lola:
-    type: git
-    url: https://github.com/ros-sports/nao_lola.git
-    version: rolling
 
