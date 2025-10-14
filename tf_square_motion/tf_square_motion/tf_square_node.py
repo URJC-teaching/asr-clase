@@ -17,7 +17,7 @@ class TFSquareMover(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.timer = self.create_timer(0.1, self.control_loop)
+        self.timer = self.create_timer(0.01, self.control_loop)
 
         self.state = 'init'
         self.start_x = 0.0
@@ -66,9 +66,9 @@ class TFSquareMover(Node):
         elif self.state == 'turn':
             # Compute angle turned
             yaw_diff = self.normalize_angle(yaw - self.start_yaw)
-            self.get_logger().info(f"Turning at side {self.side_count + 1}. angle: {yaw_diff:.2f}")
+            self.get_logger().info(f"Turning at side {self.side_count + 1}. angle: {math.degrees(yaw_diff):.2f} deg")
 
-            if abs(yaw_diff) < math.pi / 2 - 0.05:
+            if abs(yaw_diff) < math.pi / 2 - 0.0005:
                 twist = Twist()
                 twist.angular.z = 0.4
                 self.publisher.publish(twist)
