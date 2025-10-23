@@ -44,14 +44,14 @@ class ObstacleDetectorNode(Node):
             self.get_logger().debug('No valid laser measurements after filtering')
             return
         
-        distance_min = min(ranges)
+        distance_min = min(ranges) # closest obstacle
         min_idx = ranges.index(distance_min)
 
         obstacle_msg = Bool()
         obstacle_msg.data = (distance_min < self.min_distance)
         self.obstacle_pub.publish(obstacle_msg)
 
-        if obstacle_msg.data:
+        if obstacle_msg.data: # if obstacle detected within min_distance
             angle = scan.angle_min + scan.angle_increment * min_idx # relative to the sensor frame
             x = distance_min * math.cos(angle)
             y = distance_min * math.sin(angle)
@@ -67,8 +67,8 @@ class ObstacleDetectorNode(Node):
                     self.base_frame,
                     scan.header.frame_id,
                     rclpy.time.Time()
-                )
-                pt_base = do_transform_point(pt, transform)
+                ) # get latest available transform between the laser frame and the base frame
+                pt_base = do_transform_point(pt, transform) # transform point to base frame
 
                 angle_base = math.atan2(pt_base.point.y, pt_base.point.x)
                 distance_base = math.hypot(pt_base.point.x, pt_base.point.y)
