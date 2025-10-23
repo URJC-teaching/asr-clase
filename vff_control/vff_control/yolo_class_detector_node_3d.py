@@ -20,7 +20,7 @@ from sensor_msgs.msg import Image
 import math
 
 
-class TwoDYOLOClassDetectorNode(Node):
+class ThreeDYOLOClassDetectorNode(Node):
     def __init__(self):
         super().__init__('yolo_class_detector_node')
 
@@ -58,17 +58,22 @@ class TwoDYOLOClassDetectorNode(Node):
         # Get the target coordinates in the source frame
         target_point = PointStamped()
         target_point.header = detection.header
-        target_point.point = detection.bbox.center
+        target_point.point.x = detection.bbox.center.position.x
+        target_point.point.y = detection.bbox.center.position.y
+        target_point.point.z = detection.bbox.center.position.z
 
         source_frame = detection.header.frame_id
-        target_frame = 'base_link'  # Robot's base frame
+        target_frame = 'base_footprint'  # Robot's base frame
+        detection_time = detection.header.stamp
 
         try:
             # Lookup the transform
+            self.get_logger().debug(f'Looking up transform from {source_frame} to {target_frame}')
             transform = self.tf_buffer.lookup_transform(
                 target_frame,
                 source_frame,
-                rclpy.time.Time()
+                detection_time,  # Use the actual timestamp from the sensor data
+                timeout=rclpy.duration.Duration(seconds=0.5) 
             )
             # Transform the point to the target frame
             transformed_point = do_transform_point(target_point, transform)
@@ -91,7 +96,7 @@ class TwoDYOLOClassDetectorNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = TwoDYOLOClassDetectorNode()
+    node = ThreeDYOLOClassDetectorNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

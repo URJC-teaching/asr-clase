@@ -65,7 +65,8 @@ class VFFControllerNode(Node):
         if self.stay_distance > 0:
             distance = math.hypot(self.attractive_vec.x, self.attractive_vec.y)
             if distance < self.stay_distance:
-                self.get_logger().info(f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
+                self.get_logger().info(f'Target @ {self.attractive_vec.x:.2f} m, {self.attractive_vec.y:.2f}. '
+                                        f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
                 self.attractive_vec = Vector3()
 
         repulsive_magnitude = math.hypot(self.repulsive_vec.x, self.repulsive_vec.y)

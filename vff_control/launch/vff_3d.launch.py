@@ -15,7 +15,7 @@ def generate_launch_description():
             name='obstacle_detector_node',
             output='screen',
             parameters=[{
-            'min_distance': 0.3,
+            'min_distance': 0.5,
             'base_frame': 'base_footprint'
             }],
             remappings=[
@@ -30,7 +30,7 @@ def generate_launch_description():
             name='yolo_class_detector_node_3d',
             output='screen',
             parameters=[{
-                'target_class': 'sports ball'
+                'target_class': 'chair'
             }],
             remappings=[
             ('/input_detection_3d', '/detections_3d'),
@@ -46,7 +46,7 @@ def generate_launch_description():
             parameters=[{
                 'max_speed': 0.3,
                 'repulsive_gain_factor': 1.0,
-                'stay_distance': 0.5
+                'stay_distance': 1.0
             }],
             remappings=[
             ('/vel', '/cmd_vel')
