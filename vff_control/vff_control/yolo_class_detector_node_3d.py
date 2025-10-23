@@ -27,6 +27,8 @@ class ThreeDYOLOClassDetectorNode(Node):
         # Parameter: target YOLO class
         self.declare_parameter('target_class', 'person')
         self.target_class = self.get_parameter('target_class').value
+        self.declare_parameter('base_frame', 'base_footprint')
+        self.base_frame = self.get_parameter('base_frame').value
 
         # TF2 buffer and listener
         self.tf_buffer = Buffer()
@@ -63,7 +65,7 @@ class ThreeDYOLOClassDetectorNode(Node):
         target_point.point.z = detection.bbox.center.position.z
 
         source_frame = detection.header.frame_id
-        target_frame = 'base_footprint'  # Robot's base frame
+        target_frame = self.base_frame
         detection_time = detection.header.stamp
 
         try:
@@ -88,6 +90,11 @@ class ThreeDYOLOClassDetectorNode(Node):
 
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
+        
+        dist = math.sqrt(vec.x**2 + vec.y**2 + vec.z**2)
+        self.get_logger().info(
+            f'Instance of class "{self.target_class}" detected at {dist:.2f} m)'
+        )
 
         self.attractive_pub.publish(vec)
 
