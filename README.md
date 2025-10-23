@@ -54,7 +54,7 @@ ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image in
 
 2. Lanza el nodo que transforma los mensajes de YOLO en mensajes estándar
 ```
-ros2 launch camera yolo_detection.launch.py
+ros2 launch camera yolo_detection2d.launch.py
 ```
 
 ## vff_control
