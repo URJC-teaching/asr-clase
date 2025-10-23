@@ -64,9 +64,14 @@ ros2 launch camera yolo_detection2d.launch.py
 ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image input_depth_topic:=/rgbd_camera/depth_image input_depth_info_topic:=/rgbd_camera/camera_info target_frame:=camera_link
 ```
 
+If using the oak camera:
+```
+ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/color/image input_depth_topic:=/stereo/depth input_depth_info_topic:=/stereo/camera_info target_frame:=oak-d_frame
+```
+
 2. Lanza el nodo que transforma los mensajes de YOLO en mensajes estándar
 ```
-ros2 launch camera yolo_detection.launch.py
+ros2 launch camera yolo_detection2d.launch.py
 ```
 
 3. Lanza la aplicación
