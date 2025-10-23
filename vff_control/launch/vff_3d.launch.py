@@ -45,8 +45,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'max_speed': 0.3,
-                'attractive_weight': 1.0,
-                'repulsive_weight': 1.0,
+                'repulsive_gain_factor': 1.0,
                 'stay_distance': 0.5
             }],
             remappings=[
