@@ -81,8 +81,8 @@ class ObstacleDetectorNode(Node):
                 angle_base = math.atan2(pt_base.point.y, pt_base.point.x)
                 distance_base = math.hypot(pt_base.point.x, pt_base.point.y)
                 self.get_logger().info(
-                    f'Obstacle @ {self.base_frame}: x={pt_base.point.x:.2f}, y={pt_base.point.y:.2f}, '
-                    f'distance={distance_base:.2f} m, angle={math.degrees(angle_base):.2f} deg'
+                    f'Obstacle @ {self.base_frame}: ({pt_base.point.x:.2f}, {pt_base.point.y:.2f}); '
+                    f'd={distance_base:.2f} m, a={math.degrees(angle_base):.2f} deg'
                 )
 
                 self.publish_repulsive_vector(distance_base, angle_base)
