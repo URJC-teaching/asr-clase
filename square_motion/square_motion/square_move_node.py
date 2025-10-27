@@ -1,41 +1,77 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-import time
+from rclpy.timer import Timer
 
 class SquareMover(Node):
     def __init__(self):
         super().__init__('square_mover')
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
-        time.sleep(2)  # Wait for the publisher to be ready
-        self.move_square()
 
-    def move_square(self):
+        # Movement Parameters
+        self.forward_speed = 0.2
+        self.turning_speed = 0.5
+        self.move_duration = 5.0      # Forward time for 1 meter (approx.)
+        self.turn_duration = 3.14     # Turn time for 90 degrees (approx.)
+
+        self.step_index = 0           
+        self.total_steps = 8          # 4 sides * 2 actions per side = 8 steps
+        self.sides_completed = 0      # Track number of sides completed
+        
+        # Time tracking
+        self.start_time = self.get_clock().now()
+
+        # Timer setup (runs every 0.1 seconds, 10 Hz)
+        self.timer_period = 0.1
+        self.timer = self.create_timer(self.timer_period, self.control_loop)
+        self.get_logger().info("SquareMover node initialized. Starting movement sequence...")
+
+
+    def control_loop(self):
+  
+        if self.step_index >= self.total_steps:
+            # Stop the robot and the timer
+            self.publisher_.publish(Twist()) # Publish zero velocities to stop
+            self.get_logger().info("Square complete. Stopping robot and shutting down timer.")
+            self.timer.cancel() 
+            return
+
         move_cmd = Twist()
-        turn_cmd = Twist()
+        action_name = ""
+        current_duration = 0.0
 
-        move_cmd.linear.x = 0.2      # Forward speed
-        turn_cmd.angular.z = 0.5     # Turning speed
+        if self.step_index % 2 == 0:  # Even index (0, 2, 4, 6) means move forward
+            move_cmd.linear.x = self.forward_speed
+            current_duration = self.move_duration
+            action_name = "Moving Forward"
+        else:  # Odd index (1, 3, 5, 7) means turn
+            move_cmd.angular.z = self.turning_speed
+            current_duration = self.turn_duration
+            action_name = "Turning"
 
-        move_duration = 3.0          # Move forward time in seconds
-        turn_duration = 1.6          # Turn 90º (approximate)
+        elapsed_time = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
+        
+        self.publisher_.publish(move_cmd)
 
-        for i in range(4):
-            self.get_logger().info(f"Side {i+1}: Moving forward")
-            self.publisher_.publish(move_cmd)
-            time.sleep(move_duration)
+        if elapsed_time >= current_duration:
+            self.get_logger().info(f"{action_name} step complete.")
+            
+            self.step_index += 1  # Move to the next step
+            self.start_time = self.get_clock().now()  # Reset the timer for the new step
+            
+            if self.step_index >= self.total_steps:
+                self.get_logger().info("Sequence complete. Waiting for final stop.")
 
-            self.get_logger().info(f"Side {i+1}: Turning")
-            self.publisher_.publish(turn_cmd)
-            time.sleep(turn_duration)
-
-        # Stop the robot
-        self.get_logger().info("Square complete. Stopping.")
-        self.publisher_.publish(Twist())
 
 def main(args=None):
     rclpy.init(args=args)
-    node = SquareMover()
+    square_mover = SquareMover()
+    
+    # rclpy.spin() is necessary to allow the timer to execute repeatedly
+    rclpy.spin(square_mover) 
+    
+    # Cleanup
+    square_mover.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
