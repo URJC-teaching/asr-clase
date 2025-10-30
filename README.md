@@ -52,9 +52,21 @@ colcon build --symlink-install
 ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image input_depth_topic:=/rgbd_camera/depth_image input_depth_info_topic:=/rgbd_camera/camera_info target_frame:=camera_link
 ```
 
+Si se está utilizando la cámara **oak**, primero hay que lanzarla:
+
+```
+ros2 launch oak_d_camera camera.launch.py use_disparity:=False use_lr_raw:=False use_pointcloud:=False
+```
+
+Y luego lanzar YOLO con los *remappings* correspondientes:
+
+```
+ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/color/image input_depth_topic:=/stereo/depth input_depth_info_topic:=/stereo/camera_info target_frame:=oak-d_frame
+```
+
 2. Lanza el nodo que transforma los mensajes de YOLO en mensajes estándar
 ```
-ros2 launch camera yolo_detection2d.launch.py
+ros2 launch camera yolo_detection2d.launch.py # yolo_detection3d.launch.py
 ```
 
 ## vff_control
@@ -64,19 +76,25 @@ ros2 launch camera yolo_detection2d.launch.py
 ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image input_depth_topic:=/rgbd_camera/depth_image input_depth_info_topic:=/rgbd_camera/camera_info target_frame:=camera_link
 ```
 
-If using the oak camera:
+Si se está utilizando la cámara **oak**, primero hay que lanzarla:
+
+```
+ros2 launch oak_d_camera camera.launch.py use_disparity:=False use_lr_raw:=False use_pointcloud:=False
+```
+Y luego lanzar YOLO con los *remappings* correspondientes:
+
 ```
 ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/color/image input_depth_topic:=/stereo/depth input_depth_info_topic:=/stereo/camera_info target_frame:=oak-d_frame
 ```
 
 2. Lanza el nodo que transforma los mensajes de YOLO en mensajes estándar
 ```
-ros2 launch camera yolo_detection2d.launch.py
+ros2 launch camera yolo_detection2d.launch.py # yolo_detection3d.launch.py
 ```
 
 3. Lanza la aplicación
 ```
-ros2 launch vff_control vff_2d.launch.py 
+ros2 launch vff_control vff_2d.launch.py # vff_3d.launch.py 
 ```
 
 
