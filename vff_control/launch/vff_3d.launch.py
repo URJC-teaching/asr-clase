@@ -45,8 +45,9 @@ def generate_launch_description():
             name='vff_controller_node',
             output='screen',
             parameters=[{
-                'max_speed': 0.3,
-                'repulsive_gain_factor': 1.0,
+                'max_linear_speed': 0.3,
+                'max_angular_speed': 1.0,
+                'repulsive_gain_factor': 0.2,
                 'stay_distance': 1.0
             }],
             remappings=[

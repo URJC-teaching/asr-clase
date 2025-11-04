@@ -20,11 +20,13 @@ class VFFControllerNode(Node):
         super().__init__('vff_controller_node')
 
         # Parameters
-        self.declare_parameter('max_speed', 0.3)
+        self.declare_parameter('max_linear_speed', 0.3)
+        self.declare_parameter('max_angular_speed', 1.0)
         self.declare_parameter('repulsive_gain_factor', 1.0)
         self.declare_parameter('stay_distance', -1.0) # -1.0 means no stay distance (2D case)
 
-        self.max_speed = self.get_parameter('max_speed').value
+        self.max_linear_speed = self.get_parameter('max_linear_speed').value
+        self.max_angular_speed = self.get_parameter('max_angular_speed').value
         self.repulsive_gain_factor = self.get_parameter('repulsive_gain_factor').value
         self.stay_distance = self.get_parameter('stay_distance').value
 
@@ -76,6 +78,11 @@ class VFFControllerNode(Node):
         # Use an exponential or squared boost for aggressive avoidance
         effective_repulsive_gain_factor = self.repulsive_gain_factor * (1.0 + repulsive_magnitude**2)
 
+        if repulsive_magnitude > 0:
+            repulsive_angle = math.atan2(self.repulsive_vec.y, self.repulsive_vec.x)
+            self.get_logger().info(
+                f'Obstacle at {repulsive_magnitude:.2f} m, angle={math.degrees(repulsive_angle):.1f} deg')
+        
         self.get_logger().debug(f'Dynamic Repulsive Gain Factor: {effective_repulsive_gain_factor:.2f}')
 
         vff_x = self.attractive_vec.x - effective_repulsive_gain_factor * self.repulsive_vec.x
@@ -84,11 +91,12 @@ class VFFControllerNode(Node):
         self.get_logger().debug(f'VFF vector: x={vff_x:.2f}, y={vff_y:.2f}')
 
         angle = math.atan2(vff_y, vff_x)
-        speed = min(self.max_speed, math.hypot(vff_x, vff_y))
 
         cmd = Twist()
-        cmd.linear.x = speed
-        cmd.angular.z = angle
+        cmd.linear.x = min(self.max_linear_speed, math.hypot(vff_x, vff_y))
+
+        rotation_dir = 1.0 if angle >= 0 else -1.0 
+        cmd.angular.z = rotation_dir * self.max_angular_speed
 
         self.cmd_pub.publish(cmd)
         self.get_logger().info(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
@@ -103,7 +111,7 @@ class VFFControllerNode(Node):
                 elapsed = (now - start_time).nanoseconds / 1e9
                 if elapsed < 0.5:
                     self.cmd_pub.publish(cmd)
-                    self.get_logger().info(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
+                    self.get_logger().debug(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
                 else:
                     timer.cancel()
 

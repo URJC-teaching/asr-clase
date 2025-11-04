@@ -15,7 +15,7 @@ def generate_launch_description():
             name='obstacle_detector_node',
             output='screen',
             parameters=[{
-            'min_distance': 0.5,
+            'min_distance': 0.2,
             'base_frame': 'base_footprint'
             }],
             remappings=[
@@ -45,8 +45,9 @@ def generate_launch_description():
             name='vff_controller_node',
             output='screen',
             parameters=[{
-                'max_speed': 0.1,
-                'repulsive_gain_factor': 1.0,
+                'max_linear_speed': 0.3,
+                'max_angular_speed': 0.2,
+                'repulsive_gain_factor': 0.2,
                 'stay_distance': -1.0 # No stay distance in 2D
             }],
             remappings=[
