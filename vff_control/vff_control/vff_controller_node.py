@@ -23,11 +23,13 @@ class VFFControllerNode(Node):
         self.declare_parameter('max_linear_speed', 0.3)
         self.declare_parameter('max_angular_speed', 1.0)
         self.declare_parameter('repulsive_gain_factor', 1.0)
+        self.declare_parameter('repulsive_influence_distance', 0.5)
         self.declare_parameter('stay_distance', -1.0) # -1.0 means no stay distance (2D case)
 
         self.max_linear_speed = self.get_parameter('max_linear_speed').value
         self.max_angular_speed = self.get_parameter('max_angular_speed').value
         self.repulsive_gain_factor = self.get_parameter('repulsive_gain_factor').value
+        self.repulsive_influence_distance = self.get_parameter('repulsive_influence_distance').value
         self.stay_distance = self.get_parameter('stay_distance').value
 
         # Subscribers
@@ -71,22 +73,31 @@ class VFFControllerNode(Node):
                                         f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
                 self.attractive_vec = Vector3()
 
-        repulsive_magnitude = math.hypot(self.repulsive_vec.x, self.repulsive_vec.y)
-
-        # Calculate a dynamic weight based on magnitude
-        # This formula ensures that when repulsive_magnitude is high (obstacle is close), the effective_repulsive_gain_factor increases significantly.
-        # Use an exponential or squared boost for aggressive avoidance
-        effective_repulsive_gain_factor = self.repulsive_gain_factor * (1.0 + repulsive_magnitude**2)
-
-        if repulsive_magnitude > 0:
-            repulsive_angle = math.atan2(self.repulsive_vec.y, self.repulsive_vec.x)
-            self.get_logger().info(
-                f'Obstacle at {repulsive_magnitude:.2f} m, angle={math.degrees(repulsive_angle):.1f} deg')
+        obstacle_distance = math.hypot(self.repulsive_vec.x, self.repulsive_vec.y)
         
-        self.get_logger().debug(f'Dynamic Repulsive Gain Factor: {effective_repulsive_gain_factor:.2f}')
+        # Initialize repulsive force components to zero
+        repulsive_force_x = 0.0
+        repulsive_force_y = 0.0
 
-        vff_x = self.attractive_vec.x - effective_repulsive_gain_factor * self.repulsive_vec.x
-        vff_y = self.attractive_vec.y - effective_repulsive_gain_factor * self.repulsive_vec.y
+        rho_0 = self.repulsive_influence_distance
+        avoidance_needed = False
+        if 0.0 < obstacle_distance <= rho_0:
+            avoidance_needed = True
+            # Normally F_rep proportional to (1/d - 1/rho_0) but we kee it simple here
+
+            force_mag_gain = 1.0 / obstacle_distance**2 # The closer the obstacle, the stronger the repulsive force
+     
+            unit_x = self.repulsive_vec.x / obstacle_distance
+            unit_y = self.repulsive_vec.y / obstacle_distance
+
+            repulsive_force_x = self.repulsive_gain_factor * force_mag_gain * unit_x
+            repulsive_force_y = self.repulsive_gain_factor * force_mag_gain * unit_y
+
+            self.get_logger().info(f'Repulsive magnitude={math.hypot(repulsive_force_x, repulsive_force_y):.2f}')
+
+
+        vff_x = self.attractive_vec.x - repulsive_force_x
+        vff_y = self.attractive_vec.y - repulsive_force_y
 
         self.get_logger().debug(f'VFF vector: x={vff_x:.2f}, y={vff_y:.2f}')
 
@@ -98,11 +109,15 @@ class VFFControllerNode(Node):
         rotation_dir = 1.0 if angle >= 0 else -1.0 
         cmd.angular.z = rotation_dir * self.max_angular_speed
 
+        # ANGULAR_KP = 1.5 
+        # proportional_angular_speed = ANGULAR_KP * angle
+        cmd.angular.z = max(min(angle, self.max_angular_speed), -self.max_angular_speed)
+
         self.cmd_pub.publish(cmd)
         self.get_logger().info(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
 
         # This hack is needed when the obstacle is detected once, but then not detected anymore
-        if not repulsive_magnitude == 0:
+        if avoidance_needed:
             start_time = self.get_clock().now()
             period = 0.1
 
