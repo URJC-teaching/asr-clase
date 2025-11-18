@@ -32,12 +32,12 @@ class TwoDYOLOClassDetectorNode(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         # Subscriber to the image
-        self.image_sub = self.create_subscription(
-            Image,
-            'input_image',
-            self.image_callback,
-            rclpy.qos.qos_profile_sensor_data
-        )
+        # self.image_sub = self.create_subscription(
+        #     Image,
+        #     'input_image',
+        #     self.image_callback,
+        #     rclpy.qos.qos_profile_sensor_data
+        # )
 
         # Subscriber to the camera info
         self.camera_info_sub = self.create_subscription(
@@ -60,13 +60,13 @@ class TwoDYOLOClassDetectorNode(Node):
 
         self.get_logger().info(f'2D YOLO Class Detector Node initialized, looking for class: {self.target_class}')
 
-    def image_callback(self, msg: Image):
-        # Just to get image size for angle calculation
-        self.current_image = msg
-        self.current_image_size = (msg.width, msg.height)
-        self.get_logger().info(f'Got image of size: {msg.width}x{msg.height}')
-        # Unsubscribe after first callback
-        self.destroy_subscription(self.image_sub)
+    # def image_callback(self, msg: Image):
+    #     # Just to get image size for angle calculation
+    #     self.current_image = msg
+    #     self.current_image_size = (msg.width, msg.height)
+    #     self.get_logger().info(f'Got image of size: {msg.width}x{msg.height}')
+    #     # Unsubscribe after first callback
+    #     self.destroy_subscription(self.image_sub)
 
     def camera_info_callback(self, msg: CameraInfo):
         # The intrinsic matrix K is a 9-element array (row-major order)
@@ -103,7 +103,7 @@ class TwoDYOLOClassDetectorNode(Node):
 
         pixel_offset_x = x_pixel - c_x
         angle = math.atan(pixel_offset_x / f_x)
-        self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees')
+        self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (fx={f_x:.2f})')
 
         vec = Vector3()
         vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
