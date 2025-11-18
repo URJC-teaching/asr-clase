@@ -13,8 +13,9 @@
 import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Detection2DArray
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3, PointStamped
 from tf2_ros import Buffer, TransformListener
+from tf2_geometry_msgs import do_transform_point
 from sensor_msgs.msg import Image, CameraInfo
 import math
 
@@ -23,11 +24,13 @@ class TwoDYOLOClassDetectorNode(Node):
     def __init__(self):
         super().__init__('yolo_class_detector_node')
 
-        # Parameter: target YOLO class
         self.declare_parameter('target_class', 'person')
+        self.declare_parameter('base_frame', 'base_footprint')
+        
         self.target_class = self.get_parameter('target_class').value
+        self.base_frame = self.get_parameter('base_frame').value
 
-        # TF2 buffer and listener
+        
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
@@ -105,6 +108,7 @@ class TwoDYOLOClassDetectorNode(Node):
         angle = math.atan(pixel_offset_x / f_x)
         self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (fx={f_x:.2f})')
 
+        # Compute attractive vector at fixed distance of 1 meter (relative to camera frame)
         vec = Vector3()
         vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
         vec.y = math.tan(angle)  # Lateral offset at 1m distance
@@ -120,6 +124,36 @@ class TwoDYOLOClassDetectorNode(Node):
         # vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
         # vec.y = math.tan(math.radians(angle))  # Lateral offset at 1m distance
         # vec.z = 0.0
+
+        target_point = PointStamped()
+        target_point.header = detection.header
+        target_point.point.x = vec.x
+        target_point.point.y = vec.y
+        target_point.point.z = vec.z
+
+        source_frame = detection.header.frame_id
+        target_frame = self.base_frame
+        detection_time = detection.header.stamp
+
+        try:
+            # Lookup the transform
+            self.get_logger().debug(f'Looking up transform from {source_frame} to {target_frame}')
+            transform = self.tf_buffer.lookup_transform(
+                target_frame,
+                source_frame,
+                detection_time,  # Use the actual timestamp from the sensor data
+                timeout=rclpy.duration.Duration(seconds=0.5) 
+            )
+            # Transform the point to the target frame
+            transformed_point = do_transform_point(target_point, transform)
+        except Exception as e:
+            self.get_logger().error(f'Transform error: {e}')
+            return
+        
+        vec.x = transformed_point.point.x
+        vec.y = transformed_point.point.y
+        vec.z = transformed_point.point.z
+
 
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
