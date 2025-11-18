@@ -10,7 +10,7 @@ from nao_led_interfaces.msg import LedIndexes, LedModes
 from std_msgs.msg import ColorRGBA
 import time
 
-class NaoHRIExample(Node):
+class HRIExample(Node):
 
     def __init__(self):
         super().__init__('nao_hri_example_node')
@@ -104,7 +104,7 @@ class NaoHRIExample(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = NaoHRIExample()
+    node = HRIExample()
     node.run()
     node.destroy_node()
     rclpy.shutdown()
