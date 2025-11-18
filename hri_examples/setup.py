@@ -29,10 +29,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'say_client = hri_examples.say_client_node:main',
-            'repeat_node = hri_examples.repeat_node:main',
+            'say = hri_examples.say_client_node:main',
+            'repeat = hri_examples.repeat_node:main',
             'generate_response_node = hri_examples.generate_response_node:main',
             'nao_hri_example = hri_examples.nao_hri_example:main',
+            'hri_example = hri_examples.hri_example:main',
         ],
     },
 )

@@ -96,6 +96,38 @@ ros2 launch camera yolo_detection2d.launch.py # yolo_detection3d.launch.py
 ```
 ros2 launch vff_control vff_2d.launch.py # vff_3d.launch.py 
 ```
+## hri_examples
+
+### Modelos en la nube (Google & OpenAI)
+
+1. Lanza los servidores STT y TTS así como otras dependencias necesarias
+```
+ros2 launch simple_hri simple_hri.launch.py
+```
+
+2. Lanza el ejemplo:
+```
+ros2 run hri_examples hri_example
+```
+
+### Modelos en local
+
+1. Lanza todas las dependencias necesarias
+```
+ros2 launch hri_examples hri_dependencies.launch.py
+```
+
+2. Lanza el ejemplo que quieras probar:
+
+```
+ros2 run hri_examples say
+```
+```
+ros2 run hri_examples repeat
+```
+```
+ros2 launch hri_examples generate_response
+```
 
 
 ## Licencia
