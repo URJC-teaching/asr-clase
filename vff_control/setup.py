@@ -13,6 +13,7 @@ setup(
         ('share/' + package_name + '/launch', ['launch/vff_2d.launch.py']),
         ('share/' + package_name + '/launch', ['launch/vff_3d.launch.py']),
         ('share/' + package_name + '/launch', ['launch/yolo_class_3d.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_class_2d.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

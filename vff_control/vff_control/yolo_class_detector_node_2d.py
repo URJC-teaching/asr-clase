@@ -15,7 +15,7 @@ from rclpy.node import Node
 from vision_msgs.msg import Detection2DArray
 from geometry_msgs.msg import Vector3
 from tf2_ros import Buffer, TransformListener
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CameraInfo
 import math
 
 
@@ -39,6 +39,14 @@ class TwoDYOLOClassDetectorNode(Node):
             rclpy.qos.qos_profile_sensor_data
         )
 
+        # Subscriber to the camera info
+        self.camera_info_sub = self.create_subscription(
+            CameraInfo,
+            'camera_info',
+            self.camera_info_callback,
+            rclpy.qos.qos_profile_sensor_data
+        )
+
         # Subscriber to Detection2DArray
         self.sub = self.create_subscription(
             Detection2DArray,
@@ -50,17 +58,32 @@ class TwoDYOLOClassDetectorNode(Node):
         # Publisher for attractive vector
         self.attractive_pub = self.create_publisher(Vector3, 'attractive_vector', 10)
 
+        self.get_logger().info(f'2D YOLO Class Detector Node initialized, looking for class: {self.target_class}')
+
     def image_callback(self, msg: Image):
         # Just to get image size for angle calculation
         self.current_image = msg
         self.current_image_size = (msg.width, msg.height)
-        self.get_logger().debug(f'Got image of size: {msg.width}x{msg.height}')
+        self.get_logger().info(f'Got image of size: {msg.width}x{msg.height}')
         # Unsubscribe after first callback
         self.destroy_subscription(self.image_sub)
+
+    def camera_info_callback(self, msg: CameraInfo):
+        # The intrinsic matrix K is a 9-element array (row-major order)
+        # K = [fx, 0, cx, 0, fy, cy, 0, 0, 1]
+        self.f_x = msg.k[0] # fx is K[0]
+        self.c_x = msg.k[2] # cx is K[2]
+
+        self.current_image_size = (msg.width, msg.height)
+        self.get_logger().info(f'Got image of size: {msg.width}x{msg.height}')
+        self.get_logger().info(f'Got camera intrinsics: fx={self.f_x:.2f}, cx={self.c_x:.2f}')
+        self.destroy_subscription(self.camera_info_sub)
 
     def detection_callback(self, msg: Detection2DArray):
         if not msg.detections:
             return
+        
+        self.get_logger().debug(f'Received {len(msg.detections)} detections')
 
         # Find first detection of the target class
         for detection in msg.detections:
@@ -70,20 +93,33 @@ class TwoDYOLOClassDetectorNode(Node):
 
     def publish_attractive_vector(self, detection):
         # Calculate angle relative to image center (positive left, negative right)
-        x = detection.bbox.center.position.x
-        self.get_logger().debug(f'Detection center x: {x:.2f}. Image size: {detection.bbox.size_x:.2f}')
-        center_x = self.current_image_size[0] / 2.0 if hasattr(self, 'current_image_size') else 320.0
+        x_pixel = detection.bbox.center.position.x
+        self.get_logger().debug(f'Detection center x: {x_pixel:.2f}. BB width: {detection.bbox.size_x:.2f}')
+        
 
+        # Use camera intrinsics to compute angle
+        f_x = self.f_x
+        c_x = self.c_x
 
-        angle = (center_x - x) / center_x  # +1 left edge, 0 center, -1 right edge
-        angle = angle * 90.0  # Convert to degrees: +90 left, 0 center, -90 right
-
-        self.get_logger().debug(f'Detected {self.target_class} at angle {angle:.1f} degrees')
+        pixel_offset_x = x_pixel - c_x
+        angle = math.atan(pixel_offset_x / f_x)
+        self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees')
 
         vec = Vector3()
         vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
-        vec.y = math.tan(math.radians(angle))  # Lateral offset at 1m distance
+        vec.y = math.tan(angle)  # Lateral offset at 1m distance
         vec.z = 0.0
+        
+        # Alternative simpler angle calculation without intrinsics (but less accurate)
+        # center_x = self.current_image_size[0] / 2.0 if hasattr(self, 'current_image_size') else 320.0
+        # angle = (center_x - x_pixel) / center_x  # +1 left edge, 0 center, -1 right edge
+        # angle = angle * 90.0  # Convert to degrees: +90 left, 0 center, -90 right (assuming 90° FOV)
+        # self.get_logger().info(f'Detected {self.target_class} at angle {angle:.1f} degrees')
+
+        # vec = Vector3()
+        # vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
+        # vec.y = math.tan(math.radians(angle))  # Lateral offset at 1m distance
+        # vec.z = 0.0
 
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
