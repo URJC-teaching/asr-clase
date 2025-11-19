@@ -34,6 +34,7 @@ setup(
             'generate_response_node = hri_examples.generate_response_node:main',
             'nao_hri_example = hri_examples.nao_hri_example:main',
             'hri_example = hri_examples.hri_example:main',
+            'hri_example2 = hri_examples.hri_example2:main',
         ],
     },
 )

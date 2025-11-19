@@ -2,12 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 from hni_interfaces.srv import TextToSpeech
-from nao_lola_command_msgs.msg import ChestLed
-from rclpy.action import ActionClient
-from nao_pos_interfaces.action import PosPlay
-from nao_led_interfaces.action import LedsPlay
-from nao_led_interfaces.msg import LedIndexes, LedModes
-from std_msgs.msg import ColorRGBA
+
 import time
 
 class HRIExample(Node):
@@ -83,21 +78,21 @@ class HRIExample(Node):
         else:
             self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
 
-    def get_result_callback(self, future):
-        result = future.result().result
-        self.get_logger().info(f'Success: {result.success}')
+    # def get_result_callback(self, future):
+    #     result = future.result().result
+    #     self.get_logger().info(f'Success: {result.success}')
 
-    def goal_response_callback(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.get_logger().info('Goal rejected :(')
-            rclpy.shutdown()
-            return
+    # def goal_response_callback(self, future):
+    #     goal_handle = future.result()
+    #     if not goal_handle.accepted:
+    #         self.get_logger().info('Goal rejected :(')
+    #         rclpy.shutdown()
+    #         return
 
-        self.get_logger().info('Goal accepted :)')
+    #     self.get_logger().info('Goal accepted :)')
 
-        get_result_future = goal_handle.get_result_async()
-        get_result_future.add_done_callback(self.get_result_callback)
+    #     get_result_future = goal_handle.get_result_async()
+    #     get_result_future.add_done_callback(self.get_result_callback)
 
 
 
