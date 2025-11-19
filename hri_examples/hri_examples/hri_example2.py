@@ -98,39 +98,46 @@ class HRIExample2(Node):
 
         self.get_logger().info("🤖 Iniciando demostración de HRI...")
 
+        # TTS para pedir al usuario que hable
         self.call_tts("Hola. Vamos a probar la extracción de información. Imagina que soy un camarero y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?", sleep_time=8.0)
 
+        # STT para capturar la respuesta del usuario
         user_response = self.call_stt()
 
+        # Llamadas a Extract para extraer ítems de interés
         extracted_text = self.call_extract(user_response, "bebida")
-
         list_items = extracted_text.strip('\n').split(";")
         n = len(list_items)
         self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
 
-
+        # Formar la frase para TTS
         phrase = self.order_to_string(list_items, "De beber, has pedido: ")
         
+        # TTS para comunicar el pedido al usuario
         self.call_tts(phrase, sleep_time=4.0)
 
+        # Repetir para platos principales
         extracted_text = self.call_extract(user_response, "platos principales")
-
         list_items = extracted_text.strip('\n').split(";")
         n = len(list_items)
         self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
 
+        # Formar la frase para TTS
         phrase = self.order_to_string(list_items, "Y de comer, has pedido: ")
    
+        # TTS para comunicar el pedido al usuario
         self.call_tts(phrase, sleep_time=4.0)
 
+        # Repetir para postres
         extracted_text = self.call_extract(user_response, "postres")
-
         list_items = extracted_text.strip('\n').split(";")
         n = len(list_items)
         self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
-
+        
+        # Formar la frase para TTS
         phrase = self.order_to_string(list_items, "De postre, quieres: ")
    
+        # TTS para comunicar el pedido al usuario
         self.call_tts(phrase, sleep_time=4.0)
 
 
