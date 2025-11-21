@@ -107,11 +107,12 @@ class VFFControllerNode(Node):
         cmd.linear.x = min(self.max_linear_speed, math.hypot(vff_x, vff_y))
 
         rotation_dir = 1.0 if angle >= 0 else -1.0 
-        cmd.angular.z = rotation_dir * self.max_angular_speed
+        # cmd.angular.z = rotation_dir * self.max_angular_speed
 
         # ANGULAR_KP = 1.5 
         # proportional_angular_speed = ANGULAR_KP * angle
-        cmd.angular.z = max(min(angle, self.max_angular_speed), -self.max_angular_speed)
+        # cmd.angular.z = max(min(angle, self.max_angular_speed), -self.max_angular_speed)
+        cmd.angular.z = rotation_dir * min(self.max_angular_speed, abs(angle))
 
         self.cmd_pub.publish(cmd)
         self.get_logger().info(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')

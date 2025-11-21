@@ -108,11 +108,11 @@ class TwoDYOLOClassDetectorNode(Node):
         angle = math.atan(pixel_offset_x / f_x)
         self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (fx={f_x:.2f})')
 
-        # Compute attractive vector at fixed distance of 1 meter (relative to camera frame)
+        # Compute attractive vector at fixed distance of 1 meter (relative to camera optical frame)
         vec = Vector3()
-        vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
-        vec.y = math.tan(angle)  # Lateral offset at 1m distance
-        vec.z = 0.0
+        vec.x = math.tan(angle)
+        vec.y = 0.0  
+        vec.z = 1.0 # Fixed distance of 1 meter. No depth info from 2D detection
         
         # Alternative simpler angle calculation without intrinsics (but less accurate)
         # center_x = self.current_image_size[0] / 2.0 if hasattr(self, 'current_image_size') else 320.0
@@ -121,9 +121,9 @@ class TwoDYOLOClassDetectorNode(Node):
         # self.get_logger().info(f'Detected {self.target_class} at angle {angle:.1f} degrees')
 
         # vec = Vector3()
-        # vec.x = 1.0  # Fixed distance of 1 meter. No depth info from 2D detection
-        # vec.y = math.tan(math.radians(angle))  # Lateral offset at 1m distance
-        # vec.z = 0.0
+        # vec.x = math.tan(angle)
+        # vec.y = 0.0  
+        # vec.z = 1.0 # Fixed distance of 1 meter. No depth info from 2D detection
 
         target_point = PointStamped()
         target_point.header = detection.header
