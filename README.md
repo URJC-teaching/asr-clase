@@ -80,6 +80,7 @@ Si se está utilizando la cámara **oak**, primero hay que lanzarla:
 
 ```
 ros2 launch oak_d_camera camera.launch.py use_disparity:=False use_lr_raw:=False use_pointcloud:=False
+ros2 run tf2_ros static_transform_publisher --child-frame-id oak-d-base-frame --frame-id base_footprint --x 0.0 --y 0.0 --z 1.0
 ```
 Y luego lanzar YOLO con los *remappings* correspondientes:
 
