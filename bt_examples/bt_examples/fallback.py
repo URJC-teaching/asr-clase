@@ -41,14 +41,5 @@ def main():
             print(f'Behavior Tree finished with status: {root.status}')
             break
 
-    # node = py_trees_ros.trees.BehaviourTree(root)
-    # root.setup(timeout=15) 
-
-    # # Tick tree till we get SUCCESS or FAILURE
-    # while True:
-    #     status = node.tree.tick_tock(500)
-    #     if status != py_trees.common.Status.RUNNING:
-    #         break
-
 if __name__ == '__main__':
     main()
