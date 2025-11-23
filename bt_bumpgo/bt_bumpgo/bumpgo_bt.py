@@ -143,10 +143,5 @@ class BumpGoBT():
         root = py_trees.composites.Sequence("bumpgo_root", memory=False)
         root.add_children([react_to_bump, move_forward])
 
-        # react_to_bump = py_trees.composites.Sequence("bumpgo_seq", memory=True)
-        # react_to_bump.add_children([check_bump, back_off, turn])
-
-        # root = py_trees.composites.Selector("bumpgo_root", memory=False)
-        # root.add_children([react_to_bump, move_forward])
         return root
 
