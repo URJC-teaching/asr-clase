@@ -62,8 +62,8 @@ class BackOff(py_trees.behaviour.Behaviour):
         node = self.blackboard.node
         self.cmd_pub = node.create_publisher(Twist, '/out_vel', 10)
 
-    # def initialise(self):
-    #     self.counter = 0
+    def initialise(self):
+        self.start_time = None
 
     def update(self):
         self.blackboard.node.get_logger().info("Backing off...")
@@ -92,15 +92,14 @@ class Turn(py_trees.behaviour.Behaviour):
         self.blackboard = Client(name=name)
         self.blackboard.register_key(key="node", access=py_trees.common.Access.READ)
         self.cmd_pub = None
-        self.start_time = None
         self.duration_sec = 2.0
 
     def setup(self, **kwargs):
         node = self.blackboard.node
         self.cmd_pub = node.create_publisher(Twist, '/out_vel', 10)
 
-    # def initialise(self):
-    #     self.counter = 0
+    def initialise(self):
+        self.start_time = None
 
     def update(self):
         self.blackboard.node.get_logger().info("Turning...")
