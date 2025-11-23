@@ -10,7 +10,7 @@ def generate_launch_description():
             output='screen',
             remappings=[
                 ('/out_vel', '/cmd_vel'),
-                ('/bump', '/bumper')
+                ('/bumper', '/events/bumper')
             ]
         )
     ])
