@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'bumpgo = bt_bumpgo.bumpgo:main',
+            'bumpgo_side = bt_bumpgo.bumpgo_side:main',
             'bumpgo_groot = bt_bumpgo.bumpgo_groot:main',
         ],
     },
