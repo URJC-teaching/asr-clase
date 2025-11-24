@@ -130,6 +130,13 @@ ros2 run hri_examples repeat
 ros2 launch hri_examples generate_response
 ```
 
+## bt_bumpgo
+
+Si queremos utilizar BTs editados con Groot, hay que ejecutar el siguiente comando para instalar `py_trees_meet_groot`
+
+```
+python3 -m pip install --user git+https://github.com/narcispr/py_trees_meet_groot.git
+```
 
 ## Licencia
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)

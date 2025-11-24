@@ -1,0 +1,23 @@
+<root BTCPP_format="4" main_tree_to_execute="BumpGoTree">
+    <BehaviorTree ID="BumpGoTree">
+        <ReactiveSequence>
+            <Fallback>
+                <Inverter>
+                    <Condition ID="CheckBump"/>
+                </Inverter>
+                <Sequence>
+                    <Action ID="BackOff"/>
+                    <Action ID="Turn"/>
+                </Sequence>
+            </Fallback>
+            <Action ID="MoveForward"/>
+        </ReactiveSequence>
+    </BehaviorTree>
+
+    <TreeNodesModel>
+        <Action ID="MoveForward"/>
+        <Condition ID="CheckBump"/>
+        <Action ID="BackOff"/>
+        <Action ID="Turn"/>
+    </TreeNodesModel>
+</root>
