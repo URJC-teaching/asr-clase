@@ -46,6 +46,8 @@ class CheckBump(py_trees.behaviour.Behaviour):
             self.blackboard.side = msg.bumper
             if self.side == BumperEvent.LEFT:
                 self.blackboard.node.get_logger().info("Bump on the LEFT side")
+            elif self.side == BumperEvent.RIGHT:
+                self.blackboard.node.get_logger().info("Bump on the RIGHT side")
             elif self.side == BumperEvent.CENTER:
                 self.blackboard.node.get_logger().info("Bump on the CENTER side")
             self.bumped = True
@@ -118,9 +120,11 @@ class Turn(py_trees.behaviour.Behaviour):
             if self.blackboard.side == BumperEvent.LEFT:
                 self.blackboard.node.get_logger().info("Turning right...")
                 self.rotation_dir = -1  # Turn right
-            else:
+            elif self.blackboard.side == BumperEvent.RIGHT:
                 self.blackboard.node.get_logger().info("Turning left...")
                 self.rotation_dir = 1   # Turn left
+            else:
+                pass  # CENTER bump
             self.start_time = node.get_clock().now()
         
         now = node.get_clock().now()
