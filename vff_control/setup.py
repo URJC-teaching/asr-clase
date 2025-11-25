@@ -14,6 +14,8 @@ setup(
         ('share/' + package_name + '/launch', ['launch/vff_3d.launch.py']),
         ('share/' + package_name + '/launch', ['launch/yolo_class_3d.launch.py']),
         ('share/' + package_name + '/launch', ['launch/yolo_class_2d.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_class_3d_alt.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/obstacle_detector.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -29,6 +31,7 @@ setup(
             'obstacle_detector_node_no_tf = vff_control.obstacle_detector_node_no_tf:main',
             'yolo_class_detector_node_2d = vff_control.yolo_class_detector_node_2d:main',
             'yolo_class_detector_node_3d = vff_control.yolo_class_detector_node_3d:main',
+            'yolo_class_detector_node_3d_alt = vff_control.yolo_class_detector_node_3d_alt:main',
         ],
     },
 )
