@@ -56,12 +56,12 @@ class VFFControllerNode(Node):
 
     def attractive_callback(self, msg: Vector3):
         self.attractive_vec = msg
-        self.get_logger().debug(f'Received Attractive vector: x={msg.x:.2f}, y={msg.y:.2f}')
+        self.get_logger().debug(f'Received Attractive vector: x={msg.x:.2f}, y={msg.y:.2f}. Magnitude={math.hypot(msg.x, msg.y):.2f}. Angle={math.degrees(math.atan2(msg.y, msg.x)):.2f} deg')
         self.compute_and_publish_cmd()
 
     def repulsive_callback(self, msg: Vector3):
         self.repulsive_vec = msg
-        self.get_logger().debug(f'Received Repulsive vector: x={msg.x:.2f}, y={msg.y:.2f}')
+        self.get_logger().debug(f'Received Repulsive vector: x={msg.x:.2f}, y={msg.y:.2f}. Magnitude={math.hypot(msg.x, msg.y):.2f}. Angle={math.degrees(math.atan2(msg.y, msg.x)):.2f} deg')
         self.compute_and_publish_cmd()
 
     def compute_and_publish_cmd(self):
@@ -69,7 +69,7 @@ class VFFControllerNode(Node):
         if self.stay_distance > 0:
             distance = math.hypot(self.attractive_vec.x, self.attractive_vec.y)
             if distance < self.stay_distance:
-                self.get_logger().info(f'Target @ {self.attractive_vec.x:.2f} m, {self.attractive_vec.y:.2f}. '
+                self.get_logger().debug(f'Target @ {self.attractive_vec.x:.2f} m, {self.attractive_vec.y:.2f}. '
                                         f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
                 self.attractive_vec = Vector3()
 
@@ -81,7 +81,7 @@ class VFFControllerNode(Node):
 
         rho_0 = self.repulsive_influence_distance
         avoidance_needed = False
-        if 0.0 < obstacle_distance <= rho_0:
+        if 0.0 < obstacle_distance <= rho_0: # If within influence distance
             avoidance_needed = True
             # Normally F_rep proportional to (1/d - 1/rho_0) but we kee it simple here
 
@@ -93,13 +93,13 @@ class VFFControllerNode(Node):
             repulsive_force_x = self.repulsive_gain_factor * force_mag_gain * unit_x
             repulsive_force_y = self.repulsive_gain_factor * force_mag_gain * unit_y
 
-            self.get_logger().info(f'Repulsive magnitude={math.hypot(repulsive_force_x, repulsive_force_y):.2f}')
+            self.get_logger().debug(f'Repulsive magnitude={math.hypot(repulsive_force_x, repulsive_force_y):.2f}. Angle={math.degrees(math.atan2(self.repulsive_vec.y, self.repulsive_vec.x)):.2f} deg')
 
 
         vff_x = self.attractive_vec.x - repulsive_force_x
         vff_y = self.attractive_vec.y - repulsive_force_y
 
-        self.get_logger().debug(f'VFF vector: x={vff_x:.2f}, y={vff_y:.2f}')
+        self.get_logger().info(f'VFF vector: x={vff_x:.2f}, y={vff_y:.2f}. Magnitude={math.hypot(vff_x, vff_y):.2f} Angle={math.degrees(math.atan2(vff_y, vff_x)):.2f} deg')
 
         angle = math.atan2(vff_y, vff_x)
 
@@ -115,23 +115,23 @@ class VFFControllerNode(Node):
         cmd.angular.z = rotation_dir * min(self.max_angular_speed, abs(angle))
 
         self.cmd_pub.publish(cmd)
-        self.get_logger().info(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
+        self.get_logger().debug(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
 
         # This hack is needed when the obstacle is detected once, but then not detected anymore
-        if avoidance_needed:
-            start_time = self.get_clock().now()
-            period = 0.1
+        # if avoidance_needed:
+        #     start_time = self.get_clock().now()
+        #     period = 0.1
 
-            def _hold_publish():
-                now = self.get_clock().now()
-                elapsed = (now - start_time).nanoseconds / 1e9
-                if elapsed < 0.5:
-                    self.cmd_pub.publish(cmd)
-                    self.get_logger().debug(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
-                else:
-                    timer.cancel()
+        #     def _hold_publish():
+        #         now = self.get_clock().now()
+        #         elapsed = (now - start_time).nanoseconds / 1e9
+        #         if elapsed < 0.5:
+        #             self.cmd_pub.publish(cmd)
+        #             self.get_logger().debug(f'Cmd: linear={cmd.linear.x:.2f}, angular={cmd.angular.z:.2f}')
+        #         else:
+        #             timer.cancel()
 
-            timer = self.create_timer(period, _hold_publish)
+        #     timer = self.create_timer(period, _hold_publish)
 
         # Reset vectors after publishing
         self.attractive_vec = Vector3()
