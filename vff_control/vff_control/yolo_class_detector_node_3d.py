@@ -60,11 +60,12 @@ class ThreeDYOLOClassDetectorNode(Node):
         # Get the target coordinates in the source frame
         target_point = PointStamped()
         target_point.header = detection.header
-        target_point.point.x = detection.bbox.center.position.x
-        target_point.point.y = detection.bbox.center.position.y
-        target_point.point.z = detection.bbox.center.position.z
+        target_point.point.x = detection.bbox3d.center.position.x
+        target_point.point.y = detection.bbox3d.center.position.y
+        target_point.point.z = detection.bbox3d.center.position.z
 
-        source_frame = detection.header.frame_id
+        # source_frame = detection.header.frame_id
+        source_frame = detection.bbox3d.frame_id
         target_frame = self.base_frame
         detection_time = detection.header.stamp
 
