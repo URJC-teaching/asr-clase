@@ -13,8 +13,9 @@ setup(
         ('share/ament_index/resource_index/packages',
          ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        # ('share/' + package_name + '/launch', ['launch/yolo_detection.launch.py']),
-        (os.path.join('share', package_name), glob('launch/*.launch.py')),
+        ('share/' + package_name + '/launch', ['launch/yolo_detection2d.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_detection3d.launch.py']),
+        # (os.path.join('share', package_name), glob('launch/*.launch.py')),
 
     ],
     install_requires=['setuptools'],
