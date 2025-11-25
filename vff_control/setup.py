@@ -16,6 +16,7 @@ setup(
         ('share/' + package_name + '/launch', ['launch/yolo_class_2d.launch.py']),
         ('share/' + package_name + '/launch', ['launch/yolo_class_3d_alt.launch.py']),
         ('share/' + package_name + '/launch', ['launch/obstacle_detector.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/full_vff_2d.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
