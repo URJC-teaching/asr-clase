@@ -14,8 +14,8 @@ def generate_launch_description():
             name='yolo_class_detector_node_3d',
             output='screen',
             parameters=[{
-                'target_class': 'chair',
-                'base_frame': 'oak-d_frame'
+                'target_class': 'cup',
+                'base_frame': 'base_footprint'
             }],
             remappings=[
             ('/input_detection_3d', '/detections_3d'),
