@@ -85,6 +85,9 @@ class ObstacleDetectorNode(Node):
                     f'd={distance_base:.2f} m, a={math.degrees(angle_base):.2f} deg'
                 )
 
+                # if (abs(angle_base) > math.pi/2):
+                #     return
+
                 self.publish_repulsive_vector(distance_base, angle_base)
 
             except Exception as e:
