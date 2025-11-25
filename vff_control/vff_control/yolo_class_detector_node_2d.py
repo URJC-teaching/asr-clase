@@ -26,13 +26,17 @@ class TwoDYOLOClassDetectorNode(Node):
 
         self.declare_parameter('target_class', 'person')
         self.declare_parameter('base_frame', 'base_footprint')
+        self.declare_parameter('optical_frame', 'camera_rgb_optical_frame')
         
         self.target_class = self.get_parameter('target_class').value
         self.base_frame = self.get_parameter('base_frame').value
+        self.optical_frame = self.get_parameter('optical_frame').value
 
         
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        self.configured = False
 
         # Subscriber to the image
         # self.image_sub = self.create_subscription(
@@ -80,6 +84,7 @@ class TwoDYOLOClassDetectorNode(Node):
         self.current_image_size = (msg.width, msg.height)
         self.get_logger().info(f'Got image of size: {msg.width}x{msg.height}')
         self.get_logger().info(f'Got camera intrinsics: fx={self.f_x:.2f}, cx={self.c_x:.2f}')
+        self.configured = True
         self.destroy_subscription(self.camera_info_sub)
 
     def detection_callback(self, msg: Detection2DArray):
@@ -95,6 +100,10 @@ class TwoDYOLOClassDetectorNode(Node):
                 break
 
     def publish_attractive_vector(self, detection):
+        
+        if not self.configured:
+            self.get_logger().warn('Camera info not yet received, cannot compute angles')
+            return
         # Calculate angle relative to image center (positive left, negative right)
         x_pixel = detection.bbox.center.position.x
         self.get_logger().debug(f'Detection center x: {x_pixel:.2f}. BB width: {detection.bbox.size_x:.2f}')
@@ -106,7 +115,7 @@ class TwoDYOLOClassDetectorNode(Node):
 
         pixel_offset_x = x_pixel - c_x
         angle = math.atan(pixel_offset_x / f_x)
-        self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (fx={f_x:.2f})')
+        self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (optical frame)')
 
         # Compute attractive vector at fixed distance of 1 meter (relative to camera optical frame)
         vec = Vector3()
@@ -131,9 +140,13 @@ class TwoDYOLOClassDetectorNode(Node):
         target_point.point.y = vec.y
         target_point.point.z = vec.z
 
-        source_frame = detection.header.frame_id
+        # source_frame = detection.header.frame_id
+        source_frame = self.optical_frame
         target_frame = self.base_frame
         detection_time = detection.header.stamp
+
+        self.get_logger().debug(f'Attractive vector for {self.target_class} '
+                                   f'x={target_point.point.x:.2f}, y={target_point.point.y:.2f}, z={target_point.point.z:.2f} ({source_frame})')
 
         try:
             # Lookup the transform
@@ -154,9 +167,11 @@ class TwoDYOLOClassDetectorNode(Node):
         vec.y = transformed_point.point.y
         vec.z = transformed_point.point.z
 
+        angle_base = math.atan2(vec.y, vec.x)
 
+        self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle_base):.1f} degrees ({target_frame})')
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
-                                   f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
+                                   f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f} ({target_frame})')
 
         self.attractive_pub.publish(vec)
 

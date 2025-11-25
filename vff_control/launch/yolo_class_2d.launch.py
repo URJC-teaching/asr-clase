@@ -16,7 +16,8 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'target_class': 'cup',
-                'base_frame': 'base_footprint'
+                'base_frame': 'base_footprint',
+                'optical_frame': 'camera_rgb_optical_frame'
             }],
             remappings=[
             ('/input_detection_2d', '/detections_2d'),
