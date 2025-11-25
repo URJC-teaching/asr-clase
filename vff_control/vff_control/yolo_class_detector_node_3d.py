@@ -68,6 +68,13 @@ class ThreeDYOLOClassDetectorNode(Node):
         target_frame = self.base_frame
         detection_time = detection.header.stamp
 
+        dist = math.sqrt(target_point.point.x**2 + target_point.point.y**2 + target_point.point.z**2)
+        angle = math.atan2(target_point.point.y, target_point.point.x)
+
+        self.get_logger().info(f'Original point for {self.target_class} '
+                                   f'x={target_point.point.x:.2f}, y={target_point.point.y:.2f}, z={target_point.point.z:.2f} ({source_frame})')
+
+        self.get_logger().debug(f'Detected {self.target_class} at {dist:.2f} m, angle {math.degrees(angle):.1f} degrees ({source_frame})')
         try:
             # Lookup the transform
             self.get_logger().debug(f'Looking up transform from {source_frame} to {target_frame}')
@@ -92,9 +99,11 @@ class ThreeDYOLOClassDetectorNode(Node):
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f}')
         
         dist = math.sqrt(vec.x**2 + vec.y**2 + vec.z**2)
-        self.get_logger().info(
-            f'Instance of class "{self.target_class}" detected at {dist:.2f} m)'
-        )
+        angle_base = math.atan2(vec.y, vec.x)
+        self.get_logger().debug(f'Detected {self.target_class} at {dist:.2f} m, angle {math.degrees(angle_base):.1f} degrees ({target_frame})')
+        
+        self.get_logger().debug(f'Attractive vector for {self.target_class} '
+                                   f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f} ({target_frame})')
 
         self.attractive_pub.publish(vec)
 

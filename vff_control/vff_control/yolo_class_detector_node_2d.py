@@ -115,7 +115,7 @@ class TwoDYOLOClassDetectorNode(Node):
 
         pixel_offset_x = x_pixel - c_x
         angle = math.atan(pixel_offset_x / f_x)
-        self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees (optical frame)')
+        self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle):.1f} degrees ({self.optical_frame})')
 
         # Compute attractive vector at fixed distance of 1 meter (relative to camera optical frame)
         vec = Vector3()
@@ -145,9 +145,6 @@ class TwoDYOLOClassDetectorNode(Node):
         target_frame = self.base_frame
         detection_time = detection.header.stamp
 
-        self.get_logger().debug(f'Attractive vector for {self.target_class} '
-                                   f'x={target_point.point.x:.2f}, y={target_point.point.y:.2f}, z={target_point.point.z:.2f} ({source_frame})')
-
         try:
             # Lookup the transform
             self.get_logger().debug(f'Looking up transform from {source_frame} to {target_frame}')
@@ -170,6 +167,7 @@ class TwoDYOLOClassDetectorNode(Node):
         angle_base = math.atan2(vec.y, vec.x)
 
         self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle_base):.1f} degrees ({target_frame})')
+        
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f} ({target_frame})')
 
