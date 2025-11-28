@@ -43,6 +43,12 @@ class YoloDetectionNode3D(Node):
             detection_msg.bbox.size.y = detection.bbox3d.size.y
             detection_msg.bbox.size.z = detection.bbox3d.size.z
 
+            self.get_logger().debug(f'Detected {detection.class_name} at '
+                                   f'x={detection.bbox3d.center.position.x:.2f}, '
+                                   f'y={detection.bbox3d.center.position.y:.2f}, '
+                                   f'z={detection.bbox3d.center.position.z:.2f} '
+                                   f'({detection.bbox3d.frame_id})')
+
             obj_msg = ObjectHypothesisWithPose()
             obj_msg.hypothesis.class_id = detection.class_name
             obj_msg.hypothesis.score = detection.score
