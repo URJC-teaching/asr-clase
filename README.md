@@ -73,7 +73,7 @@ ros2 launch camera yolo_detection2d.launch.py # yolo_detection3d.launch.py
 
 1. Lanza YOLO
 ```
-ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image input_depth_topic:=/rgbd_camera/depth_image input_depth_info_topic:=/rgbd_camera/camera_info target_frame:=camera_link
+ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/rgbd_camera/image input_depth_topic:=/rgbd_camera/depth_image input_depth_info_topic:=/rgbd_camera/camera_info target_frame:=camera_link # use_3d:=True
 ```
 
 Si se está utilizando la cámara **oak**, primero hay que lanzarla:
@@ -85,7 +85,7 @@ ros2 run tf2_ros static_transform_publisher --child-frame-id oak-d-base-frame --
 Y luego lanzar YOLO con los *remappings* correspondientes:
 
 ```
-ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/color/image input_depth_topic:=/stereo/depth input_depth_info_topic:=/stereo/camera_info target_frame:=oak-d_frame
+ros2 launch yolo_bringup yolo.launch.py input_image_topic:=/color/image input_depth_topic:=/stereo/depth input_depth_info_topic:=/stereo/camera_info target_frame:=oak-d_frame # use_3d:=True
 ```
 
 2. Lanza el nodo que transforma los mensajes de YOLO en mensajes estándar
