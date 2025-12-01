@@ -53,6 +53,10 @@ class YoloDetectionNode3D(Node):
             obj_msg.hypothesis.class_id = detection.class_name
             obj_msg.hypothesis.score = detection.score
 
+            obj_msg.pose.pose.position.x = detection.bbox3d.center.position.x
+            obj_msg.pose.pose.position.y = detection.bbox3d.center.position.y
+            obj_msg.pose.pose.position.z = detection.bbox3d.center.position.z
+
             detection_msg.results.append(obj_msg)
             detection_array_msg.detections.append(detection_msg)
 
