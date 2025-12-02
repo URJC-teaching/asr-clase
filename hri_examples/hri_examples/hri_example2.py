@@ -9,7 +9,7 @@ import time
 class HRIExample2(Node):
 
     def __init__(self):
-        super().__init__('hri_example_node')
+        super().__init__('nao_hri_example_node')
     
         # STT client
         self.stt_client = self.create_client(SetBool, '/stt_service')

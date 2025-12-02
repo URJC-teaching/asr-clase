@@ -71,7 +71,8 @@ class VFFControllerNode(Node):
             if distance < self.stay_distance:
                 self.get_logger().debug(f'Target @ {self.attractive_vec.x:.2f} m, {self.attractive_vec.y:.2f}. '
                                         f'Within stay distance ({distance:.2f} < {self.stay_distance}), ignoring attraction')
-                self.attractive_vec = Vector3()
+                # self.attractive_vec = Vector3() # Zero attractive vector
+                return  # Do not move if within stay distance
 
         obstacle_distance = math.hypot(self.repulsive_vec.x, self.repulsive_vec.y)
         
