@@ -101,6 +101,10 @@ class HRIExample2(Node):
         # TTS para pedir al usuario que hable
         self.call_tts("Hola. Vamos a probar la extracción de información. Imagina que soy un camarero y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?", sleep_time=8.0)
 
+        # Esperar antes de iniciar STT para que no se escuche la voz del TTS
+        time.sleep(3.0)
+
+
         # STT para capturar la respuesta del usuario
         user_response = self.call_stt()
 

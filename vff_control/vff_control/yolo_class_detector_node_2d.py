@@ -166,7 +166,7 @@ class TwoDYOLOClassDetectorNode(Node):
 
         angle_base = math.atan2(vec.y, vec.x)
 
-        self.get_logger().debug(f'Detected {self.target_class} at angle {math.degrees(angle_base):.1f} degrees ({target_frame})')
+        self.get_logger().info(f'Detected {self.target_class} at angle {math.degrees(angle_base):.1f} degrees ({target_frame})')
         
         self.get_logger().debug(f'Attractive vector for {self.target_class} '
                                    f'x={vec.x:.2f}, y={vec.y:.2f}, z={vec.z:.2f} ({target_frame})')

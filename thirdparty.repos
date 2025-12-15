@@ -17,8 +17,8 @@ repositories:
     version: main
   thirdparty/audio_common_sp:
     type: git
-    url: https://github.com/rolker/audio_common.git
-    version: main
+    url: git@github.com:rodperex/sound_play.git
+    version: ros2
   thirdparty/tts_ros:
     type: git
     url: https://github.com/mgonzs13/tts_ros.git
