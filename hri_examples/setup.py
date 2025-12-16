@@ -35,6 +35,7 @@ setup(
             'nao_hri_example = hri_examples.nao_hri_example:main',
             'hri_example = hri_examples.hri_example:main',
             'hri_example2 = hri_examples.hri_example2:main',
+            'hri_example3 = hri_examples.hri_example3:main',
         ],
     },
 )
