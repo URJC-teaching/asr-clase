@@ -15,7 +15,7 @@ repositories:
     type: git
     url: https://github.com/mgonzs13/audio_common.git
     version: main
-  thirdparty/audio_common_sp:
+  thirdparty/sound_play:
     type: git
     url: git@github.com:rodperex/sound_play.git
     version: ros2
