@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import SetBool
-from hni_interfaces.srv import TextToSpeech
+from simple_hri_interfaces.srv import Speech
 from nao_lola_command_msgs.msg import ChestLed
 from rclpy.action import ActionClient
 from nao_pos_interfaces.action import PosPlay
@@ -21,7 +21,7 @@ class NaoHRIExample(Node):
             self.get_logger().info('/stt_service unavailable...')
 
         # TTS client
-        self.tts_client = self.create_client(TextToSpeech, '/tts_service')
+        self.tts_client = self.create_client(Speech, '/tts_service')
         while not self.tts_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('/tts_service unavailable...')
 
@@ -61,7 +61,7 @@ class NaoHRIExample(Node):
         chest_led_msg.color.b = 0.0
         self.chest_led_pub.publish(chest_led_msg)
 
-        tts_req = TextToSpeech.Request()
+        tts_req = Speech.Request()
         tts_req.text = "Hola, soy Nao. Vamos a probar el reconocimiento de voz y la síntesis de voz. Habla cuando la luz de mi pecho esté azul."
         tts_future = self.tts_client.call_async(tts_req)
         rclpy.spin_until_future_complete(self, tts_future)

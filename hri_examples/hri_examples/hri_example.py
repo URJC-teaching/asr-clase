@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import SetBool
-from hni_interfaces.srv import TextToSpeech
+from simple_hri_interfaces.srv import Speech
 
 import time
 
@@ -16,7 +16,7 @@ class HRIExample(Node):
             self.get_logger().info('/stt_service unavailable...')
 
         # TTS client
-        self.tts_client = self.create_client(TextToSpeech, '/tts_service')
+        self.tts_client = self.create_client(Speech, '/tts_service')
         while not self.tts_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('/tts_service unavailable...')
 
@@ -28,7 +28,7 @@ class HRIExample(Node):
         self.get_logger().info("🤖 Iniciando demostración de HRI...")
 
 
-        tts_req = TextToSpeech.Request()
+        tts_req = Speech.Request()
         tts_req.text = "Hola. Vamos a probar el reconocimiento de voz y la síntesis de voz. Habla ahora."
         tts_future = self.tts_client.call_async(tts_req)
         rclpy.spin_until_future_complete(self, tts_future)
