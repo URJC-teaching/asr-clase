@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>fsm_nav</name>
+  <version>0.0.1</version>
+  <description>Ejemplo de máquina de estados para navegación.</description>
+  <maintainer email="user@example.com">User</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_python</buildtool_depend>
+    <export>
+      <build_type>ament_python</build_type>
+    </export>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>yaml</exec_depend>
+</package>

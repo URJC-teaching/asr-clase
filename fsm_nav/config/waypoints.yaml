@@ -1,0 +1,8 @@
+fsm_nav_node:
+  ros__parameters:
+    nav1:
+      x: -1.0
+      y: 0.0
+    nav2:
+      x: 4.0
+      y: 0.0
