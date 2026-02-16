@@ -68,9 +68,9 @@ class TFSquareMover(Node):
             yaw_diff = self.normalize_angle(yaw - self.start_yaw)
             self.get_logger().info(f"Turning at side {self.side_count + 1}. angle: {math.degrees(yaw_diff):.2f} deg")
 
-            if abs(yaw_diff) < math.pi / 2 - 0.0005:
+            if abs(yaw_diff) < math.pi / 2:
                 twist = Twist()
-                twist.angular.z = 0.4
+                twist.angular.z = 1.0
                 self.publisher.publish(twist)
             else:
                 self.publisher.publish(Twist())  # stop
