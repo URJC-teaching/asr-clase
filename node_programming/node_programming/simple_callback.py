@@ -22,15 +22,15 @@ def callback(msg):
 
 def main(args=None):
     rclpy.init(args=args)
-    subscriber_node = rclpy.create_node('subscriber_node')
-    subscriber = subscriber_node.create_subscription(
+    node = rclpy.create_node('subscriber_node')
+    subscriber = node.create_subscription(
         Int32,
         'int_topic',
         callback,
         10
     )
-    rclpy.spin(subscriber_node)
-    subscriber_node.destroy_node()
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
