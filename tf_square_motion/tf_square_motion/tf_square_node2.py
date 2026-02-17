@@ -92,7 +92,8 @@ class TFSquareMover(Node):
             
 
         elif self.state == 'turn':
-            # Calcular blref2bl = inv(odom2blref) @ odom2bl
+            # blref2bl = blef2odom @ odom2bl
+            # blref2bl = inv(odom2blref) @ odom2bl
             T_odom2blref = self.transform_to_matrix(self.odom2blref)
             T_odom2bl = self.transform_to_matrix(odom2bl)
             T_blref2bl = np.linalg.inv(T_odom2blref) @ T_odom2bl
