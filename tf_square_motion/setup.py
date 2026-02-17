@@ -21,6 +21,7 @@ setup(
     entry_points={
     'console_scripts': [
         'tf_square = tf_square_motion.tf_square_node:main',
+        'tf_square2 = tf_square_motion.tf_square_node2:main',
     ],
 },
 
