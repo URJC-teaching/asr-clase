@@ -25,6 +25,6 @@ repositories:
     version: main
   thirdparty/oak_d_camera:
     type: git
-    url: git@github.com:jmguerreroh/oak_d_camera.git
+    url: https://github.com/jmguerreroh/oak_d_camera.git
     version: jazzy
 
