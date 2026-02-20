@@ -20,15 +20,30 @@ class TFSeekerNode(Node):
     def __init__(self):
         super().__init__('tf_seeker')
 
+        self.declare_parameter('erratic', False)
+        self.erratic = self.get_parameter('erratic').get_parameter_value().bool_value
+
+        self.get_logger().info(f"TFSeekerNode initialized with erratic={self.erratic}")
+
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.vel_publisher = self.create_publisher(Twist, '/cmd_vel', 10)
 
-        self.vlin_pid = PIDController(0.0, 1.0, 0.0, 0.7)
-        self.vrot_pid = PIDController(0.0, 1.0, 0.3, 1.0)
+        if not self.erratic:
+            # PID con constantes ajustadas para evitar sobrepaso y oscilación
+            # kp bajo para evitar sobrereacción, ki muy bajo o cero para evitar acumulación, kd para amortiguamiento
+            self.vlin_pid = PIDController(0.0, 1.0, -0.5, 0.5, kp=0.3, ki=0.0, kd=0.15)
+            self.vrot_pid = PIDController(0.0, 1.0, -0.5, 0.5, kp=0.6, ki=0.0, kd=0.25)
+        else:
+            # Constantes del PID mal ajustadas a propósito para que el robot oscile un poco y no se quede estático
+            # kp muy alto causa sobrereacción, ki causa acumulación y sobrepaso, kd bajo no estabiliza
+            self.vlin_pid = PIDController(0.0, 1.0, -0.5, 0.5, kp=5.0, ki=1.5, kd=0.0)
+            self.vrot_pid = PIDController(0.0, 1.0, -0.5, 0.5, kp=8.0, ki=1.0, kd=0.0)
+        
 
-        self.timer = self.create_timer(0.05, self.control_cycle)
+        self.timer_period = 0.05  # 20 Hz
+        self.timer = self.create_timer(self.timer_period, self.control_cycle)
 
     def control_cycle(self):
 
@@ -46,8 +61,12 @@ class TFSeekerNode(Node):
             angle = math.atan2(y, x)
             dist = math.sqrt(x ** 2 + y ** 2)
 
-            vel_rot = max(-2.0, min(self.vrot_pid.get_output(angle), 2.0))
-            vel_lin = max(-1.0, min(self.vlin_pid.get_output(dist - 1.0), 1.0))
+            # Pasar dt correcto a los PIDs (0.05 segundos = período del timer)
+            vel_rot = max(-2.0, min(self.vrot_pid.get_output(angle, self.timer_period), 2.0))
+            vel_lin = max(-1.0, min(self.vlin_pid.get_output(dist - 1.0, self.timer_period), 1.0))
+
+            self.get_logger().debug(f'Angle error: {angle:.2f}. Angular speed: {vel_rot:.2f}')
+            self.get_logger().info(f'Distance error: {dist - 1:.2f}. Linear speed: {vel_lin:.2f}')
 
             twist = Twist()
             twist.linear.x = vel_lin

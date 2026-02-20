@@ -18,12 +18,17 @@ class TFPublisherNode(Node):
     def __init__(self):
         super().__init__('tf_producer')
 
+        self.declare_parameter('tf_update_time', 20.0)
+        self.tf_update_time = self.get_parameter('tf_update_time').get_parameter_value().double_value
+        
+        self.get_logger().info(f"TFPublisherNode initialized with tf_update_time={self.tf_update_time} seconds")
+
         self.tf_broadcaster = TransformBroadcaster(self)
 
         self.transform = TransformStamped()
         self.generate_tf()
 
-        self.create_timer(20.0, self.generate_tf)
+        self.create_timer(self.tf_update_time, self.generate_tf)
         self.create_timer(0.05, self.publish_tf)
 
     def generate_tf(self):
