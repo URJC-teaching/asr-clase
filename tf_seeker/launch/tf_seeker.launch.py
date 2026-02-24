@@ -18,11 +18,11 @@ def generate_launch_description():
         name='tf_publisher_node',
         output='screen',
         parameters=[{'use_sim_time': True,
-                     'tf_update_time': 20.0}],
+                     'tf_update_time': 60.0}],
     )
 
     # Node for seeking TF
-    seeker_cmd = Node(
+    seeker_cmd = Node(  
         package='tf_seeker',
         executable='tf_seeker_node',
         name='tf_seeker_node',

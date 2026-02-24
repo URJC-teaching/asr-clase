@@ -26,7 +26,7 @@ class TFSquareMover(Node):
         self.timer = self.create_timer(0.01, self.control_loop)
 
         self.state = 'init'
-        self.odom2blref = None  # Guardamos odom2blref (base_link referencia a odom)
+        self.blref2odom = None  # Guardamos odom2blref (base_link referencia a odom)
         self.side_count = 0
 
     def transform_to_matrix(self, transform_stamped):
@@ -62,32 +62,32 @@ class TFSquareMover(Node):
     def control_loop(self):
         try:
             # Buscamos la transformación actual
-            odom2bl = self.tf_buffer.lookup_transform('odom', 'base_link', rclpy.time.Time())
+            bl2odom = self.tf_buffer.lookup_transform('odom', 'base_link', rclpy.time.Time())
         except Exception as e:
             # Es normal que falle al principio mientras carga el buffer
             return
 
         # Inicializar la referencia si es la primera vez (prevención de seguridad)
-        if self.odom2blref is None:
-            self.odom2blref = odom2bl
+        if self.blref2odom is None:
+            self.blref2odom = bl2odom
 
         if self.state == 'init':
             # Guardar la transformación de referencia para comenzar el lado
-            self.odom2blref = odom2bl
+            self.blref2odom = bl2odom
             self.state = 'forward'
             self.get_logger().info(f"Starting side {self.side_count + 1}")
             return
 
         elif self.state == 'forward':
             # Convertimos ambas transformaciones a matrices 4x4
-            T_odom2blref = self.transform_to_matrix(self.odom2blref)
-            T_odom2bl = self.transform_to_matrix(odom2bl)
+            T_blref2odom = self.transform_to_matrix(self.blref2odom)
+            T_bl2odom = self.transform_to_matrix(bl2odom)
             
             # Operación: T_relativa = inv(T_referencia) * T_actual
             # Calculamos dónde está el robot AHORA respecto a donde EMPEZÓ el movimiento
-            T_blref2bl = np.linalg.inv(T_odom2blref) @ T_odom2bl
-            
-            x, y, _ = self.matrix_to_pose(T_blref2bl)
+            T_bl2blref = T_bl2odom @ np.linalg.inv(T_blref2odom)
+
+            x, y, _ = self.matrix_to_pose(T_bl2blref)
             distance = math.sqrt(x**2 + y**2)
             
             # Logueo intermitente para no saturar consola (opcional)
@@ -100,19 +100,19 @@ class TFSquareMover(Node):
             else:
                 self.publisher.publish(Twist())  # stop
                 self.state = 'turn'
-                self.odom2blref = odom2bl  # Nueva referencia para empezar a medir el giro
+                self.blref2odom = bl2odom  # Nueva referencia para empezar a medir el giro
                 self.get_logger().info(f"Finished side {self.side_count + 1}, starting turn.")
                 time.sleep(0.5)
 
         elif self.state == 'turn':
             # Convertimos a matrices
-            T_odom2blref = self.transform_to_matrix(self.odom2blref)
-            T_odom2bl = self.transform_to_matrix(odom2bl)
+            T_blref2odom = self.transform_to_matrix(self.blref2odom)
+            T_bl2odom = self.transform_to_matrix(bl2odom)
             
             # Calculamos diferencia relativa
-            T_blref2bl = np.linalg.inv(T_odom2blref) @ T_odom2bl
+            T_bl2blref = T_bl2odom @ np.linalg.inv(T_blref2odom)
             
-            _, _, yaw = self.matrix_to_pose(T_blref2bl)
+            _, _, yaw = self.matrix_to_pose(T_bl2blref)
             
             # Logueo
             # self.get_logger().info(f"Turning angle: {math.degrees(yaw):.2f} deg")
