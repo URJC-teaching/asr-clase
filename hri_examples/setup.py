@@ -36,6 +36,9 @@ setup(
             'hri_example = hri_examples.hri_example:main',
             'hri_example2 = hri_examples.hri_example2:main',
             'hri_example3 = hri_examples.hri_example3:main',
+            'hri_example_client = hri_examples.hri_example_client:main',
+            'hri_example2_client = hri_examples.hri_example2_client:main',
+            'hri_example3_client = hri_examples.hri_example3_client:main',
         ],
     },
 )

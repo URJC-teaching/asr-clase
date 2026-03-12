@@ -15,6 +15,7 @@
   <depend>nao_pos_interfaces</depend>
   <depend>std_srvs</depend>
   <depend>nao_led_interfaces</depend>
+  <depend>hri_client</depend>
 
   <!-- Test dependencies -->
   <test_depend>ament_copyright</test_depend>
