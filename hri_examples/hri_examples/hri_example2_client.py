@@ -1,6 +1,21 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import SingleThreadedExecutor
 from hri_client.hri_client import HRIClient
+from enum import Enum, auto
+
+
+class State(Enum):
+    INIT = auto()
+    WAITING_INTRO = auto()
+    WAITING_USER_RESPONSE = auto()
+    WAITING_EXTRACT_DRINK = auto()
+    WAITING_ECHO_DRINK = auto()
+    WAITING_EXTRACT_FOOD = auto()
+    WAITING_ECHO_FOOD = auto()
+    WAITING_EXTRACT_DESSERT = auto()
+    WAITING_ECHO_DESSERT = auto()
+    DONE = auto()
 
 
 class HRIExample2Client(Node):
@@ -13,56 +28,19 @@ class HRIExample2Client(Node):
             self.get_logger().info('Servicios no disponibles, esperando...')
 
         self.get_logger().info("✅ Clientes Extract, STT y TTS listos para usar.")
-
-    def call_tts(self, text, sleep_time=4.0):
-        self.start_speaking(text)
-        # Se requiere timeout_sec para evitar que el nodo se quede bloqueado de 
-        # forma indefinida esperando eventos si no hay mensajes nuevos inmediatos.
-        while rclpy.ok() and not self.is_speaking_done():
-            rclpy.spin_once(self, timeout_sec=0.1)
-            
-        if self.get_speaking_result():
-            self.get_logger().info("✅ TTS ejecutado correctamente")
-        else:
-            self.get_logger().error("❌ Error en TTS")
-
-    def call_stt(self):
-        self.get_logger().info("🎤 Iniciando reconocimiento de voz (STT)...")
-        self.hri_client.start_listen()
-        # El timeout_sec permite que el ejecutor no se quede bloqueado si no hay
-        # eventos inmediatamente, dando paso a evaluar la condición del bucle.
-        while rclpy.ok() and not self.hri_client.is_listen_done():
-            rclpy.spin_once(self.hri_client, timeout_sec=0.1)
-
-        transcription = self.hri_client.get_listened_text()
-        if not transcription:
-            self.get_logger().error("❌ Error en STT")
-            return ""
-
-        self.get_logger().info(f"📝 Transcripción obtenida: {transcription}")
-        return transcription
         
-    def call_extract(self, text, interest):
-        self.get_logger().info("🔍 Enviando texto al servicio Extract...")
-        self.hri_client.start_extract(interest, text)
-        # Spin_once con timeout asegura que podamos salir del bucle en cuanto .is_extract_done() 
-        # devuelva True, en lugar de quedarnos bloqueados indefinidamente por falta de callbacks.
-        while rclpy.ok() and not self.hri_client.is_extract_done():
-            rclpy.spin_once(self.hri_client, timeout_sec=0.1)
-
-        extracted_response = self.hri_client.get_extracted_info()
-        self.get_logger().info(f"📝 Extracto obtenido: {extracted_response}")
-
-        if extracted_response == "ERROR":
-            self.get_logger().error("❌ Error en Extract")
-            return None
+        self.state = State.INIT
+        self.user_response = ""
         
-        return extracted_response
-    
+        # Ejecutamos el control_loop() cada 0.1 segundos (10 Hz)
+        self.timer = self.create_timer(0.1, self.control_loop)
 
     def order_to_string(self, order_list, prefix):
         n = len(order_list)
         phrase = prefix
+
+        if not order_list:
+            return phrase + "nada."
 
         if order_list[0] == "NONE":
             phrase += "nada."
@@ -79,51 +57,129 @@ class HRIExample2Client(Node):
         
         return phrase
 
-    def run(self):
-        self.get_logger().info("🤖 Iniciando demostración de HRI...")
+    def control_loop(self):
+        if self.state == State.INIT:
+            self.get_logger().info("🤖 Iniciando demostración de HRI con Extract...")
+            self.hri_client.start_speaking(
+                "Hola. Vamos a probar la extracción de información. Imagina que soy un camarero "
+                "y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?"
+            )
+            self.state = State.WAITING_INTRO
 
-        # TTS para pedir al usuario que hable
-        self.call_tts("Hola. Vamos a probar la extracción de información. Imagina que soy un camarero y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?", sleep_time=8.0)
+        elif self.state == State.WAITING_INTRO:
+            if self.hri_client.is_speaking_done():
+                if self.hri_client.get_speaking_result():
+                    self.get_logger().info("✅ TTS ejecutado correctamente")
+                else:
+                    self.get_logger().error("❌ Error en TTS")
 
+                self.get_logger().info("🎤 Iniciando reconocimiento de voz (STT)...")
+                self.hri_client.start_listen()
+                self.state = State.WAITING_USER_RESPONSE
 
-        # STT para capturar la respuesta del usuario
-        user_response = self.call_stt()
+        elif self.state == State.WAITING_USER_RESPONSE:
+            if self.hri_client.is_listen_done():
+                self.user_response = self.hri_client.get_listened_text()
+                if not self.user_response:
+                    self.get_logger().error("❌ Error en STT")
+                    self.user_response = ""
+                else:
+                    self.get_logger().info(f"📝 Transcripción obtenida: {self.user_response}")
 
-        if not user_response:
-             user_response = ""
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (bebida)...")
+                self.hri_client.start_extract("bebida", self.user_response)
+                self.state = State.WAITING_EXTRACT_DRINK
 
-        # Llamadas a Extract para extraer ítems de interés
-        extracted_text = self.call_extract(user_response, "bebida")
-        if extracted_text:
-            list_items = extracted_text.strip('\n').split(";")
-            n = len(list_items)
-            self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
-            phrase = self.order_to_string(list_items, "De beber, has pedido: ")
-            self.call_tts(phrase, sleep_time=4.0)
+        elif self.state == State.WAITING_EXTRACT_DRINK:
+            if self.hri_client.is_extract_done():
+                extracted_text = self.hri_client.get_extracted_info()
+                self.get_logger().info(f"📝 Extracto obtenido (bebida): {extracted_text}")
 
-        # Repetir para platos principales
-        extracted_text = self.call_extract(user_response, "platos principales")
-        if extracted_text:
-            list_items = extracted_text.strip('\n').split(";")
-            n = len(list_items)
-            self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
-            phrase = self.order_to_string(list_items, "Y de comer, has pedido: ")
-            self.call_tts(phrase, sleep_time=4.0)
+                if extracted_text and extracted_text != "ERROR":
+                    list_items = extracted_text.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    phrase = self.order_to_string(list_items, "De beber, has pedido: ")
+                    self.hri_client.start_speaking(phrase)
+                    self.state = State.WAITING_ECHO_DRINK
+                else:
+                    # Si falla, pasamos directo a procesar la comida
+                    self.get_logger().info("🔍 Enviando texto al servicio Extract (platos principales)...")
+                    self.hri_client.start_extract("platos principales", self.user_response)
+                    self.state = State.WAITING_EXTRACT_FOOD
 
-        # Repetir para postres
-        extracted_text = self.call_extract(user_response, "postres")
-        if extracted_text:
-            list_items = extracted_text.strip('\n').split(";")
-            n = len(list_items)
-            self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
-            phrase = self.order_to_string(list_items, "De postre, quieres: ")
-            self.call_tts(phrase, sleep_time=4.0)
+        elif self.state == State.WAITING_ECHO_DRINK:
+            if self.hri_client.is_speaking_done():
+                # Pasamos a procesar platos principales
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (platos principales)...")
+                self.hri_client.start_extract("platos principales", self.user_response)
+                self.state = State.WAITING_EXTRACT_FOOD
+
+        elif self.state == State.WAITING_EXTRACT_FOOD:
+            if self.hri_client.is_extract_done():
+                extracted_text = self.hri_client.get_extracted_info()
+                self.get_logger().info(f"📝 Extracto obtenido (platos principales): {extracted_text}")
+
+                if extracted_text and extracted_text != "ERROR":
+                    list_items = extracted_text.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    phrase = self.order_to_string(list_items, "Y de comer, has pedido: ")
+                    self.hri_client.start_speaking(phrase)
+                    self.state = State.WAITING_ECHO_FOOD
+                else:
+                    # Si falla, pasamos directo a procesar los postres
+                    self.get_logger().info("🔍 Enviando texto al servicio Extract (postres)...")
+                    self.hri_client.start_extract("postres", self.user_response)
+                    self.state = State.WAITING_EXTRACT_DESSERT
+
+        elif self.state == State.WAITING_ECHO_FOOD:
+            if self.hri_client.is_speaking_done():
+                # Pasamos a procesar postres
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (postres)...")
+                self.hri_client.start_extract("postres", self.user_response)
+                self.state = State.WAITING_EXTRACT_DESSERT
+
+        elif self.state == State.WAITING_EXTRACT_DESSERT:
+            if self.hri_client.is_extract_done():
+                extracted_text = self.hri_client.get_extracted_info()
+                self.get_logger().info(f"📝 Extracto obtenido (postres): {extracted_text}")
+
+                if extracted_text and extracted_text != "ERROR":
+                    list_items = extracted_text.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    phrase = self.order_to_string(list_items, "De postre, quieres: ")
+                    self.hri_client.start_speaking(phrase)
+                    self.state = State.WAITING_ECHO_DESSERT
+                else:
+                    self.state = State.DONE
+
+        elif self.state == State.WAITING_ECHO_DESSERT:
+            if self.hri_client.is_speaking_done():
+                self.state = State.DONE
+
+        elif self.state == State.DONE:
+            self.get_logger().info("🎉 Demostración finalizada.")
+            self.timer.cancel()
+            raise SystemExit
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = HRIExample2Client()
-    node.run()
+    
+    executor = SingleThreadedExecutor()
+    executor.add_node(node)
+    executor.add_node(node.hri_client)
+    
+    try:
+        executor.spin()
+    except SystemExit:
+        pass
+    except KeyboardInterrupt:
+        pass
+
     node.hri_client.destroy_node()
     node.destroy_node()
     rclpy.shutdown()

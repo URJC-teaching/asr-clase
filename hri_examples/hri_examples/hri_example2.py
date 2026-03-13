@@ -2,9 +2,28 @@ import rclpy
 from rclpy.node import Node
 from std_srvs.srv import SetBool
 from simple_hri_interfaces.srv import Speech
-
 from simple_hri_interfaces.srv import Extract
+from enum import Enum, auto
+
 import time
+
+
+class State(Enum):
+    INIT = auto()
+    WAITING_INTRO = auto()
+    WAITING_INTRO_DELAY = auto()
+    WAITING_USER_RESPONSE = auto()
+    WAITING_EXTRACT_DRINK = auto()
+    WAITING_ECHO_DRINK_DELAY = auto()
+    WAITING_ECHO_DRINK = auto()
+    WAITING_EXTRACT_FOOD = auto()
+    WAITING_ECHO_FOOD_DELAY = auto()
+    WAITING_ECHO_FOOD = auto()
+    WAITING_EXTRACT_DESSERT = auto()
+    WAITING_ECHO_DESSERT_DELAY = auto()
+    WAITING_ECHO_DESSERT = auto()
+    DONE = auto()
+
 
 class HRIExample2(Node):
 
@@ -27,57 +46,28 @@ class HRIExample2(Node):
             self.get_logger().info('/extract_service no disponible, esperando...')
 
         self.get_logger().info("✅ Clientes Extract, STT y TTS listos para usar.")
-
-    def call_tts(self, text, sleep_time=4.0):
-        tts_req = Speech.Request()
-        tts_req.text = text
-        tts_future = self.tts_client.call_async(tts_req)
-        rclpy.spin_until_future_complete(self, tts_future)
-        tts_response = tts_future.result()
-        time.sleep(sleep_time)
-
-        if tts_response.success:
-            self.get_logger().info("✅ TTS ejecutado correctamente")
-        else:
-            self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
-
-    def call_stt(self):
-        self.get_logger().info("🎤 Iniciando reconocimiento de voz (STT)...")
-        stt_req = SetBool.Request()
-        stt_req.data = True  # Indica al servicio que inicie grabación
-
-        stt_future = self.stt_client.call_async(stt_req)
-        rclpy.spin_until_future_complete(self, stt_future)
-        stt_response = stt_future.result()
-
-        if not stt_response.success:
-            self.get_logger().error(f"❌ Error en STT: {stt_response.message}")
-            return None
-
-        self.get_logger().info(f"📝 Transcripción obtenida: {stt_response.message}")
-        return stt_response.message
         
-    def call_extract(self, text, interest):
-        self.get_logger().info("🔍 Enviando texto al servicio Extract...")
-        extract_req = Extract.Request()
-        extract_req.text = text
-        extract_req.interest = interest
-        extract_future = self.extract_client.call_async(extract_req)
-        rclpy.spin_until_future_complete(self, extract_future)
-        extract_response = extract_future.result()
-
-        self.get_logger().info(f"📝 Extracto obtenido: {extract_response.result}")
-
-        if extract_response.result == "ERROR":
-            self.get_logger().error(f"❌ Error en Extract: {extract_response.message}")
-            return None
+        self.state = State.INIT
+        self.user_response = ""
+        self.current_future = None
+        self.sleep_until = 0.0
+        self.phrase_to_speak = ""
         
-        return extract_response.result
-    
+        # Ejecutamos el control_loop() cada 0.1 segundos (10 Hz)
+        self.timer = self.create_timer(0.1, self.control_loop)
+
+    def is_sleeping(self):
+        return time.time() < self.sleep_until
+
+    def set_sleep(self, seconds):
+        self.sleep_until = time.time() + seconds
 
     def order_to_string(self, order_list, prefix):
         n = len(order_list)
         phrase = prefix
+
+        if not order_list:
+            return phrase + "nada."
 
         if order_list[0] == "NONE":
             phrase += "nada."
@@ -94,63 +84,210 @@ class HRIExample2(Node):
         
         return phrase
 
-    def run(self):
+    def control_loop(self):
+        if self.is_sleeping():
+            return
 
-        self.get_logger().info("🤖 Iniciando demostración de HRI...")
+        if self.state == State.INIT:
+            self.get_logger().info("🤖 Iniciando demostración de HRI con Extract...")
 
-        # TTS para pedir al usuario que hable
-        self.call_tts("Hola. Vamos a probar la extracción de información. Imagina que soy un camarero y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?", sleep_time=8.0)
+            tts_req = Speech.Request()
+            tts_req.text = "Hola. Vamos a probar la extracción de información. Imagina que soy un camarero y tú eres un cliente que va a hacer un pedido. ¿Qué te gustaría pedir de beber y de comer?"
+            self.current_future = self.tts_client.call_async(tts_req)
+            self.state = State.WAITING_INTRO
 
-        # Esperar antes de iniciar STT para que no se escuche la voz del TTS
-        time.sleep(3.0)
+        elif self.state == State.WAITING_INTRO:
+            if self.current_future and self.current_future.done():
+                tts_response = self.current_future.result()
+                if tts_response.success:
+                    self.get_logger().info("✅ TTS ejecutado correctamente")
+                else:
+                    self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
 
+                # Darle tiempo a la locución y unos segundos extra antes de iniciar STT
+                self.set_sleep(11.0) # 8.0 base + 3.0 de delay original de tu código
+                self.state = State.WAITING_INTRO_DELAY
 
-        # STT para capturar la respuesta del usuario
-        user_response = self.call_stt()
+        elif self.state == State.WAITING_INTRO_DELAY:
+            self.get_logger().info("🎤 Iniciando reconocimiento de voz (STT)...")
+            stt_req = SetBool.Request()
+            stt_req.data = True
+            self.current_future = None
+            self.current_future = self.stt_client.call_async(stt_req)
+            self.state = State.WAITING_USER_RESPONSE
 
-        # Llamadas a Extract para extraer ítems de interés
-        extracted_text = self.call_extract(user_response, "bebida")
-        list_items = extracted_text.strip('\n').split(";")
-        n = len(list_items)
-        self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+        elif self.state == State.WAITING_USER_RESPONSE:
+            if self.current_future and self.current_future.done():
+                stt_response = self.current_future.result()
+                if not stt_response.success:
+                    self.get_logger().error(f"❌ Error en STT: {stt_response.message}")
+                    self.user_response = ""
+                else:
+                    self.user_response = stt_response.message
+                    self.get_logger().info(f"📝 Transcripción obtenida: {self.user_response}")
 
-        # Formar la frase para TTS
-        phrase = self.order_to_string(list_items, "De beber, has pedido: ")
-        
-        # TTS para comunicar el pedido al usuario
-        self.call_tts(phrase, sleep_time=4.0)
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (bebida)...")
+                ext_req = Extract.Request()
+                ext_req.text = self.user_response
+                ext_req.interest = "bebida"
+                self.current_future = None
+                self.current_future = self.extract_client.call_async(ext_req)
+                self.state = State.WAITING_EXTRACT_DRINK
 
-        # Repetir para platos principales
-        extracted_text = self.call_extract(user_response, "platos principales")
-        list_items = extracted_text.strip('\n').split(";")
-        n = len(list_items)
-        self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+        # ------------- BEBIDA -------------
+        elif self.state == State.WAITING_EXTRACT_DRINK:
+            if self.current_future and self.current_future.done():
+                extract_response = self.current_future.result()
+                self.get_logger().info(f"📝 Extracto obtenido (bebida): {extract_response.result}")
 
-        # Formar la frase para TTS
-        phrase = self.order_to_string(list_items, "Y de comer, has pedido: ")
-   
-        # TTS para comunicar el pedido al usuario
-        self.call_tts(phrase, sleep_time=4.0)
+                if extract_response.result and extract_response.result != "ERROR":
+                    list_items = extract_response.result.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    self.phrase_to_speak = self.order_to_string(list_items, "De beber, has pedido: ")
+                    
+                    # Hacemos el delay para que no pise nada anterior o suene natural
+                    self.set_sleep(2.0)
+                    self.state = State.WAITING_ECHO_DRINK_DELAY
+                else:
+                    self.get_logger().error(f"❌ Error en Extract: {extract_response.message}")
+                    # Si falla pasamos a platos principales igual
+                    self.get_logger().info("🔍 Enviando texto al servicio Extract (platos principales)...")
+                    ext_req = Extract.Request()
+                    ext_req.text = self.user_response
+                    ext_req.interest = "platos principales"
+                    self.current_future = None
+                    self.current_future = self.extract_client.call_async(ext_req)
+                    self.state = State.WAITING_EXTRACT_FOOD
 
-        # Repetir para postres
-        extracted_text = self.call_extract(user_response, "postres")
-        list_items = extracted_text.strip('\n').split(";")
-        n = len(list_items)
-        self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
-        
-        # Formar la frase para TTS
-        phrase = self.order_to_string(list_items, "De postre, quieres: ")
-   
-        # TTS para comunicar el pedido al usuario
-        self.call_tts(phrase, sleep_time=4.0)
+        elif self.state == State.WAITING_ECHO_DRINK_DELAY:
+            tts_req = Speech.Request()
+            tts_req.text = self.phrase_to_speak
+            self.current_future = None
+            self.current_future = self.tts_client.call_async(tts_req)
+            self.state = State.WAITING_ECHO_DRINK
+
+        elif self.state == State.WAITING_ECHO_DRINK:
+            if self.current_future and self.current_future.done():
+                tts_response = self.current_future.result()
+                if tts_response.success:
+                    self.get_logger().info("✅ TTS ejecutado correctamente")
+                else:
+                    self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
+
+                # Pasamos al siguiente
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (platos principales)...")
+                ext_req = Extract.Request()
+                ext_req.text = self.user_response
+                ext_req.interest = "platos principales"
+                self.current_future = None
+                self.current_future = self.extract_client.call_async(ext_req)
+                self.state = State.WAITING_EXTRACT_FOOD
+
+        # ------------- COMIDA -------------
+        elif self.state == State.WAITING_EXTRACT_FOOD:
+            if self.current_future and self.current_future.done():
+                extract_response = self.current_future.result()
+                self.get_logger().info(f"📝 Extracto obtenido (platos principales): {extract_response.result}")
+
+                if extract_response.result and extract_response.result != "ERROR":
+                    list_items = extract_response.result.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    self.phrase_to_speak = self.order_to_string(list_items, "Y de comer, has pedido: ")
+                    
+                    self.set_sleep(2.0)
+                    self.state = State.WAITING_ECHO_FOOD_DELAY
+                else:
+                    self.get_logger().error(f"❌ Error en Extract: {extract_response.message}")
+                    self.get_logger().info("🔍 Enviando texto al servicio Extract (postres)...")
+                    ext_req = Extract.Request()
+                    ext_req.text = self.user_response
+                    ext_req.interest = "postres"
+                    self.current_future = None
+                    self.current_future = self.extract_client.call_async(ext_req)
+                    self.state = State.WAITING_EXTRACT_DESSERT
+
+        elif self.state == State.WAITING_ECHO_FOOD_DELAY:
+            tts_req = Speech.Request()
+            tts_req.text = self.phrase_to_speak
+            self.current_future = None
+            self.current_future = self.tts_client.call_async(tts_req)
+            self.state = State.WAITING_ECHO_FOOD
+
+        elif self.state == State.WAITING_ECHO_FOOD:
+            if self.current_future and self.current_future.done():
+                tts_response = self.current_future.result()
+                if tts_response.success:
+                    self.get_logger().info("✅ TTS ejecutado correctamente")
+                else:
+                    self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
+
+                # Pasamos al último
+                self.get_logger().info("🔍 Enviando texto al servicio Extract (postres)...")
+                ext_req = Extract.Request()
+                ext_req.text = self.user_response
+                ext_req.interest = "postres"
+                self.current_future = None
+                self.current_future = self.extract_client.call_async(ext_req)
+                self.state = State.WAITING_EXTRACT_DESSERT
+
+        # ------------- POSTRE -------------
+        elif self.state == State.WAITING_EXTRACT_DESSERT:
+            if self.current_future and self.current_future.done():
+                extract_response = self.current_future.result()
+                self.get_logger().info(f"📝 Extracto obtenido (postres): {extract_response.result}")
+
+                if extract_response.result and extract_response.result != "ERROR":
+                    list_items = extract_response.result.strip('\n').split(";")
+                    n = len(list_items)
+                    self.get_logger().info(f"✅ Se han extraído {n} ítems de interés.")
+                    self.phrase_to_speak = self.order_to_string(list_items, "De postre, quieres: ")
+                    
+                    self.set_sleep(2.0)
+                    self.state = State.WAITING_ECHO_DESSERT_DELAY
+                else:
+                    self.get_logger().error(f"❌ Error en Extract: {extract_response.message}")
+                    self.state = State.DONE
+
+        elif self.state == State.WAITING_ECHO_DESSERT_DELAY:
+            tts_req = Speech.Request()
+            tts_req.text = self.phrase_to_speak
+            self.current_future = None
+            self.current_future = self.tts_client.call_async(tts_req)
+            self.state = State.WAITING_ECHO_DESSERT
+
+        elif self.state == State.WAITING_ECHO_DESSERT:
+            if self.current_future and self.current_future.done():
+                tts_response = self.current_future.result()
+                if tts_response.success:
+                    self.get_logger().info("✅ TTS ejecutado correctamente")
+                else:
+                    self.get_logger().error(f"❌ Error en TTS: {tts_response.debug}")
+                
+                self.state = State.DONE
+
+        elif self.state == State.DONE:
+            self.get_logger().info("🎉 Demostración finalizada.")
+            self.timer.cancel()
+            rclpy.shutdown()
+            return
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = HRIExample2()
-    node.run()
-    node.destroy_node()
-    rclpy.shutdown()
+    
+    try:
+        rclpy.spin(node)
+    except Exception:
+        pass
+
+    try:
+        node.destroy_node()
+        rclpy.shutdown()
+    except Exception:
+        pass
 
 
 if __name__ == '__main__':
