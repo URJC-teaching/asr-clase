@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import SingleThreadedExecutor
 from hri_client.hri_client import HRIClient
 from enum import Enum, auto
 
@@ -16,7 +15,7 @@ class HRIExampleClient(Node):
 
     def __init__(self):
         super().__init__('hri_example_client_node')
-        self.hri_client = HRIClient()
+        self.hri_client = HRIClient(self)
         
         if not self.hri_client.wait_for_services(10.0):
             self.get_logger().error("Servicios no disponibles.")
@@ -82,20 +81,13 @@ def main(args=None):
     rclpy.init(args=args)
     node = HRIExampleClient()
     
-    # Utilizamos un ejecutor para poder procesar a la vez los callbacks
-    # de nuestro nodo (Timer) y los callbacks del hri_client (STT/TTS)
-    executor = SingleThreadedExecutor()
-    executor.add_node(node)
-    executor.add_node(node.hri_client) 
-    
     try:
-        executor.spin() # Esto bloqueará el main procesando callbacks de ambos nodos
+        rclpy.spin(node) # Esto bloqueará el main procesando callbacks
     except SystemExit:
         pass # Salida limpia cuando State == DONE
     except KeyboardInterrupt:
         pass # Salida limpia con Ctrl+C
 
-    node.hri_client.destroy_node()
     node.destroy_node()
     rclpy.shutdown()
 

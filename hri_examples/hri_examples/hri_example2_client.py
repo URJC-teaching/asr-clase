@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import SingleThreadedExecutor
 from hri_client.hri_client import HRIClient
 from enum import Enum, auto
 
@@ -22,7 +21,7 @@ class HRIExample2Client(Node):
 
     def __init__(self):
         super().__init__('hri_example2_client_node')
-        self.hri_client = HRIClient()
+        self.hri_client = HRIClient(self)
     
         if not self.hri_client.wait_for_services(10.0):
             self.get_logger().info('Servicios no disponibles, esperando...')
@@ -169,18 +168,13 @@ def main(args=None):
     rclpy.init(args=args)
     node = HRIExample2Client()
     
-    executor = SingleThreadedExecutor()
-    executor.add_node(node)
-    executor.add_node(node.hri_client)
-    
     try:
-        executor.spin()
+        rclpy.spin(node)
     except SystemExit:
         pass
     except KeyboardInterrupt:
         pass
 
-    node.hri_client.destroy_node()
     node.destroy_node()
     rclpy.shutdown()
 
