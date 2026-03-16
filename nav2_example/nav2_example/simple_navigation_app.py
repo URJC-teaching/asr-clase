@@ -3,12 +3,11 @@
 import rclpy
 from rclpy.node import Node
 from navigation_client.navigation_client import NavigationClient
-from rclpy.executors import SingleThreadedExecutor
 
 class SimpleNavigationApp(Node):
-    def __init__(self, nav_client):
+    def __init__(self):
         super().__init__('simple_navigation_app_py_node')
-        self.nav_client_ = nav_client
+        self.nav_client_ = NavigationClient(self)
         self.target_pose_ = self.nav_client_.create_pose_stamped(6.0, -2.0, 0.0)
         
         self.server_ready_ = False
@@ -52,20 +51,14 @@ class SimpleNavigationApp(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-    nav_client = NavigationClient()
-    app_node = SimpleNavigationApp(nav_client)
-        
-    executor = SingleThreadedExecutor()
-    executor.add_node(app_node)
-    executor.add_node(nav_client)
+    app_node = SimpleNavigationApp()
     
     try:
-        executor.spin()
+        rclpy.spin(app_node)
     except KeyboardInterrupt:
         pass
     finally:
         app_node.destroy_node()
-        nav_client.destroy_node()
         rclpy.try_shutdown()
 
 if __name__ == '__main__':
