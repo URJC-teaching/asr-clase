@@ -11,7 +11,7 @@ from vision_msgs.msg import Detection3DArray, Detection3D, ObjectHypothesisWithP
 class YoloToStandardNode3D(Node):
 
     def __init__(self):
-        super().__init__('yolo_detection_node_3d')
+        super().__init__('yolo_to_standard_node_3d')
 
         self.declare_parameter('kobuki_sim', False)
         self.declare_parameter('optical_frame', 'camera_rgb_optical_frame')
@@ -66,7 +66,6 @@ class YoloToStandardNode3D(Node):
             detection_array_msg.detections.append(detection_msg)
 
         self.detection_pub.publish(detection_array_msg)
-
 
 def main(args=None):
     rclpy.init(args=args)

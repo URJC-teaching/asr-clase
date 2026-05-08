@@ -25,12 +25,12 @@ def generate_launch_description():
     # param_file = os.path.join(pkg_dir, 'config', 'params.yaml')
 
     yolo_cmd = Node(package='camera',
-                        executable='yolo_detection_node_3d',
+                        executable='yolo_to_standard_node',
                         output='screen',
                         parameters=[],
                         remappings=[
-                          ('input_detection', '/yolo/detections_3d'),
-                          ('output_detection_3d', '/detections_3d')
+                          ('input_detection', '/yolo/detections'),
+                          ('output_detection_2d', '/detections_2d')
                         ])
 
     ld = LaunchDescription()

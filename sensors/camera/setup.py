@@ -13,8 +13,8 @@ setup(
         ('share/ament_index/resource_index/packages',
          ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/yolo_detection2d.launch.py']),
-        ('share/' + package_name + '/launch', ['launch/yolo_detection3d.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_to_standard2d.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_to_standard3d.launch.py']),
         # (os.path.join('share', package_name), glob('launch/*.launch.py')),
 
     ],
@@ -27,8 +27,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'yolo_detection_node = camera.yolo_detection_node:main',
-            'yolo_detection_node_3d = camera.yolo_detection_node_3d:main',
+            'yolo_to_standard_node = camera.yolo_to_standard_node:main',
+            'yolo_to_standard_node_3d = camera.yolo_to_standard_node_3d:main',
         ],
     },
 )

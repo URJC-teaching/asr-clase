@@ -10,7 +10,7 @@ from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithP
 
 class YoloToStandardNode(Node):
     def __init__(self):
-        super().__init__('yolo_detection_node')
+        super().__init__('yolo_to_standard_node')
 
         self.detection_sub = self.create_subscription(
             DetectionArray,
@@ -46,7 +46,6 @@ class YoloToStandardNode(Node):
             detection_array_msg.detections.append(detection_msg)
 
         self.detection_pub.publish(detection_array_msg)
-
 
 def main(args=None):
     rclpy.init(args=args)
